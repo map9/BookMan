@@ -34,12 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 import SearchBar from "./Search/SearchBar.vue";
 
-import { SearchRange } from "./ts/SearchHelper";
+import { SearchRange } from "./ts/BookDefine";
 import HeadType from "./ts/HeadType"
-import { computed } from '@vue/reactivity';
 
 // 定义外部输入的属性
 interface Props {

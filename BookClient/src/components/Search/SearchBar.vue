@@ -46,7 +46,7 @@ import { useRouter } from 'vue-router';
 import { useToast } from "vue-toastification";
 
 import { useSearchStore, SearchParamsItem } from "../../stores/SearchStore"
-import { SearchRange } from "../ts/SearchHelper";
+import { SearchRange } from "../ts/BookDefine";
 
 const toast = useToast();
 

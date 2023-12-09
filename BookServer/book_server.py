@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 import logging
 from book_manager import BookManager, QueryObject, QueryResults
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', force=True)
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', force=True)
 
 # 实例化并命名为 app 实例
 app = Flask(__name__)
@@ -74,7 +74,23 @@ def get_book_catalogue():
       return jsonify(book_catalogue)
     else:
       return jsonify(error="can't find book catalogue."), 400  # 使用HTTP状态码400表示错误请求
-  
+
+@app.route("/book/chapter", methods=["GET"])
+def get_book_chapter():
+  if request.method == 'GET':
+    q = request.args.get('q')
+    vno = request.args.get('vno', type=int)
+    cno = request.args.get('cno', type=int)
+
+    logging.info(f"/book/chapter, q: {q}, vno: {vno}, cno: {cno}.")
+
+    book_chapter = app.bookmanager.get_book_chapter(q, vno, cno)
+
+    if book_chapter is not None:
+      return jsonify(book_chapter)
+    else:
+      return jsonify(error="can't find book chapter."), 400  # 使用HTTP状态码400表示错误请求
+
 @app.route("/book/content", methods=["GET"])
 def get_book_content():
   if request.method == 'GET':

@@ -12,20 +12,18 @@
 <script setup lang="ts">
 import { defineProps, ref, onMounted, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from "axios";
-import { useToast } from "vue-toastification";
 
 import HeadBar from "./HeadBar.vue";
 import SearchResultHit from './Search/SearchResultHit.vue';
 import BookShelf from './Books/BookShelf.vue';
 
 import LoadingStatus from "./ts/LoadingStatus";
-import { SearchResultObject, SearchRange } from "./ts/SearchHelper"
+import { SearchResultObject, SearchRange } from "./ts/BookDefine"
 import { getStringParam } from "./ts/Helper"
+import { getBookList } from './ts/BookHelper';
 import HeadType from './ts/HeadType';
 
 const route = useRoute();
-const toast = useToast();
 
 // 定义外部输入的属性
 interface Props {
@@ -45,47 +43,35 @@ const searchResults = ref<SearchResultObject>({
 });
 const loadingStatus = ref(LoadingStatus.idle);
 
+const DoSearch = (q: string | undefined) => {
+  getBookList(q, (d)=>searchResults.value = d);
+  if(q){
+    searchString.value = q;
+  }else{
+    searchString.value = '';
+  }
+  if (searchString.value.length > 0) {
+    document.title = searchString.value + ' - 开卷 书库';
+  }else{
+    document.title = '开卷 书库';
+  }
+}
+
 // 初始化时，导入路由跳转传递的参数
 // 由于路由跳转时，组件可能未被渲染，因此，采用异步方式来接收参数
 onMounted(async () => {
   await nextTick();
 
-  var q = getStringParam(route, 'q');
-  search(q);
+  DoSearch(getStringParam(route, 'q'));
 });
 
 // watch监听路由变化，当router采用createWebHistory模式时，即使URL已经发生变化，watch函数不会被调用。
 watch(() => route.query.q, (newValue) => {
   if (newValue !== undefined) {
-    var q = newValue as string;
-    search(q);
+    DoSearch(newValue as string);
+    console.debug();
   }
 });
-
-const search = async (q: string | undefined): Promise<void> => {
-  if (q === undefined) {
-    searchString.value = '';
-  } else {
-    searchString.value = q;
-  }
-  console.log(`Search, q: ${searchString.value}.`);
-  if (searchString.value.length > 0) {
-    document.title = searchString.value + ' - 开卷 书库';
-  }
-
-  loadingStatus.value = LoadingStatus.loading;
-  try {
-    const response = await axios.get(`/api/book/list?q=${searchString.value}`);
-    searchResults.value = response.data;
-    if (!searchResults.value.result_pieces || searchResults.value.result_pieces && searchResults.value.result_pieces.length == 0) {
-      toast.error(`找不到书名为:${searchString.value}的书籍。`);
-    }
-    loadingStatus.value = LoadingStatus.done;
-  } catch (error) {
-    loadingStatus.value = LoadingStatus.error;
-    toast.error(`搜索书籍出现错误:${error}。`);
-  }
-};
 </script>
 
 <style scoped>

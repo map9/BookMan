@@ -20,7 +20,7 @@ import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
 
 import LoadingStatus from "../ts/LoadingStatus";
-import { Book } from "../ts/Book";
+import { Book } from "../ts/BookDefine";
 
 interface Props {
   loadingStatus: LoadingStatus;

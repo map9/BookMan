@@ -37,7 +37,7 @@ import { defineProps, computed } from 'vue';
 import { useToast } from "vue-toastification";
 
 import LoadingStatus from "../ts/LoadingStatus";
-import { Book } from "../ts/Book";
+import { Book } from "../ts/BookDefine";
 
 const toast = useToast();
 

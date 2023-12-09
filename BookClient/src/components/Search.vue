@@ -33,7 +33,7 @@ import SearchResultHit from './Search/SearchResultHit.vue';
 import BookDirectory from "./Search/SearchResultBookDirectory.vue";
 
 import LoadingStatus from "./ts/LoadingStatus";
-import { SearchResultObject, SearchRange, BookChapterItem } from "./ts/SearchHelper"
+import { SearchResultObject, SearchRange, BookChapterItem } from "./ts/BookDefine"
 import { getStringParam } from "./ts/Helper"
 import HeadType from './ts/HeadType';
 
@@ -122,8 +122,6 @@ const OnBookDirectoryUpdate = (item: BookChapterItem) => {
   flex-grow: 1;
   justify-content: center;
   z-index: 3;
-  /*display: flex;
-  overflow-y: auto;*/
   margin: auto 10px;
 }
 

@@ -83,8 +83,7 @@
 <script setup lang="ts">
 import { defineProps, ref, defineEmits, computed } from 'vue';
 import LoadingStatus from "../ts/LoadingStatus";
-import { Book } from "../ts/Book";
-import { BookChapterItem } from "../ts/SearchHelper"
+import { Book, BookChapterItem } from "../ts/BookDefine"
 
 // 通过父组件从外部传入的属性数据
 interface Props {

@@ -261,12 +261,43 @@ class BookManager(object):
 		book = self.load_book_byindex(book_index)
 		_book = copy.deepcopy(book)
 
-		for v in book["volumes"]:
+		for v in _book["volumes"]:
 			for c in v["chapters"]:
 				c["paragraphs"] = None
 
 		return _book
+
+	def get_book_chapter(self, q, vno, cno):
+		book_index = self.get_index_bytitle(q)
+		if book_index is None:
+			logging.debug(f"can't find book: {q}.")
+			return None
+		if cno is None:
+			logging.debug(f"cno can't be None: {q}.")
+			return None
 		
+		book = self.load_book_byindex(book_index)
+		order = 0
+		# 按照总章节排序返回章节内容
+		if vno is None:
+			for volume in book["volumes"]:
+				for chapter in volume["chapters"]:
+					if(order == cno):
+						return chapter
+					else:
+						order += 1
+			logging.debug(f"can't find chapter: {cno}.")
+
+		for indexv, volume in enumerate(book["volumes"]):
+			if(indexv == vno):
+				for indexc, chapter in enumerate(volume["chapters"]):
+					if(indexc == cno):
+						return chapter
+				break
+		logging.debug(f"can't find chapter: {cno}.")
+
+		return None
+
 	def get_book_content(self, q, v, c):
 		book_index = self.get_index_bytitle(q)
 		if book_index is None:

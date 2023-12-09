@@ -30,7 +30,7 @@ import { ArrowDownBold } from '@element-plus/icons-vue';
         </label>
         <ul v-if="(volume._collapse === undefined || volume._collapse === false) && volume.chapters" class="volume-chapters">
           <li class="chapter-item" v-for="(chapter, indexc) in order? volume.chapters : volume.chapters.slice().reverse()" :key="indexc">
-            <router-link :to="{ path: '/Reader', 'query':{q: props.inBook.title, v: volume.title, c: chapter.title}}" class="chapter-name">{{ chapter.title }}</router-link>
+            <router-link :to="{ path: '/Reader', 'query':{q: props.inBook.title, vno:order? index : props.inBook.volumes.length - index - 1, cno: order? indexc : volume.chapters.length - indexc - 1}}" class="chapter-name">{{ chapter.title }}</router-link>
           </li>
         </ul>
       </div>
@@ -40,7 +40,7 @@ import { ArrowDownBold } from '@element-plus/icons-vue';
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Book } from "../ts/Book";
+import { Book } from "../ts/BookDefine";
 
 // 定义外部输入的属性
 interface Props {

@@ -1,6 +1,6 @@
 // stores/query.js
 import { defineStore } from 'pinia'
-import { SearchRange } from '../components/ts/SearchHelper';
+import { SearchRange } from '../components/ts/BookDefine';
 
 export interface SearchParamsItem {
   searchString: string;

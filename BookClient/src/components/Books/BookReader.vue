@@ -1,8 +1,10 @@
 <template>
   <div ref="bookReaderDiv" class="book-reader">
     <div v-for="(chapter, index) in currentBookChapters" class="chapter" :key="index">
-      <p class="chapter-title">{{ chapter.volumeTitle.length? `${chapter.volumeTitle}&nbsp·&nbsp${chapter.chapter.title}` : chapter.chapter.title }}</p>
-      <p class="chapter-content" v-for="paragraph in chapter?.chapter.paragraphs">&#8195&#8195{{ paragraph.content }}</p>
+      <transition-group name="fade" tag="div" class="chapter-content-container">
+        <p class="chapter-title" :key="chapter.vno">{{ chapter.volumeTitle.length? `${chapter.volumeTitle}&nbsp·&nbsp${chapter.chapter.title}` : chapter.chapter.title }}</p>
+        <p class="chapter-content" v-for="(paragraph, indexp) in chapter?.chapter.paragraphs"  :key="indexp">&#8195&#8195{{ paragraph.content }}</p>
+      </transition-group>
     </div>
 
     <div v-if="props.inIsPageMode" class="navbar">
@@ -14,103 +16,121 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, onMounted, nextTick, computed, watch, defineEmits } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from "axios";
+import { defineProps, ref, onMounted, onUnmounted, nextTick, computed, watch, defineEmits } from 'vue';
 import { useToast } from "vue-toastification";
 
+import { debounce } from 'lodash-es';
+
 import LoadingStatus from "../ts/LoadingStatus";
-import { Book, Chapter } from "../ts/Book";
-import { getStringParam } from "../ts/Helper"
+import { Book, Chapter } from "../ts/BookDefine";
+import { getBookCatalogue, getBookChapter } from '../ts/BookHelper';
+
+const toast = useToast();
 
 const bookReaderDiv = ref<HTMLElement | null>(null);
-
-const route = useRoute();
-const toast = useToast();
 
 // 定义外部输入的属性
 interface Props {
   inBook?: Book;
   inBookString?: string;
-  inVolumeString?: string;
-  inChapterString?: string;
+  inVolumeIndex?: number;
+  inChapterIndex?: number;
   inIsPageMode?: boolean,
 }
 var props = withDefaults(defineProps<Props>(), {
   inBook: undefined,
-  inBookString: '',
-  inVolumeString: '',
-  inChapterString: '',
+  inBookString: undefined,
+  inVolumeIndex: 0,
+  inChapterIndex: 0,
   inIsPageMode: true,
 });
 
 const bookObject = ref<Book>();
-const bookString = ref<string>(props.inBookString);
-const volumeString = ref<string>(props.inVolumeString);
-const chapterString = ref<string>(props.inChapterString);
+const currentChapterIndex = ref<number>(0);
 
 const loadingStatus = ref(LoadingStatus.idle);
 
+// 父组件传入参数属于异步调用，因此，需要采用watch来监视传入参数的变化，
+// 以便执行操作。
 watch(() => props.inBook, (newValue) => {
   if (newValue !== undefined) {
-    bookObject.value = newValue as Book;
+    bookObject.value = newValue;
     resetBookChapters();
+  }
+});
+
+watch(() => props.inVolumeIndex, (newValue) => {
+  if (newValue !== undefined) {
+    var index = no2Order(newValue, props.inChapterIndex);
+    loadChapter(index);
+  }
+});
+
+watch(() => props.inChapterIndex, (newValue) => {
+  if (newValue !== undefined) {
+    var index = no2Order(props.inVolumeIndex, newValue);
+    loadChapter(index);
+  }
+});
+
+watch(() => props.inIsPageMode, (newValue) => {
+  if (newValue !== undefined) {
+    if(newValue == false){
+      //checkScroll(undefined);
+      // 如果用户已经滚动到页面底部（或非常接近底部）
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - (32+15)) {
+        if(currentBookChapters.value)
+          loadChapter(currentBookChapters.value[currentBookChapters.value.length-1].order + 1);
+      }
+    }
   }
 });
 
 // 初始化时，导入路由跳转传递的参数
 // 由于路由跳转时，组件可能未被渲染，因此，采用异步方式来接收参数
 onMounted(async () => {
+  //window.addEventListener('scroll', checkScroll); // 监听窗口滚动栏变化
+  window.addEventListener('scroll', debouncedCheckScroll);
+
   await nextTick();
 
-  bookObject.value = props.inBook;
-  resetBookChapters();
+  // 参数未传入
+  if(props.inBook === undefined){
+    if(props.inBookString){
+      getBookCatalogue(props.inBookString, (d)=>{
+        bookObject.value = d;
+        resetBookChapters();
+      });
+    }
+  }else{
+    bookObject.value = props.inBook;
+    resetBookChapters();
+  }
+});
 
-  bookString.value = getStringParam(route, 'q') as string;
-  volumeString.value = getStringParam(route, 'v')  as string;
-  chapterString.value = getStringParam(route, 'c')  as string;
-  //getBookContent(bookString.value, volumeString.value, chapterString.value);
+onUnmounted(()=>{
+  //window.removeEventListener('scroll', checkScroll); // 清理监听器
+  window.removeEventListener('scroll', debouncedCheckScroll);
+
 });
 
 interface BookChapters {
   order: number;
+  vno: number;
+  cno: number;
   volumeTitle: string;
   chapter: Chapter;
-  showed: boolean;
 }
 const bookChapters = ref<BookChapters[]>([]);
-// 默认为书的第一个章节
-const currentChapterIndex = ref(0);
 const currentBookChapters = ref<BookChapters[]>([]);
 
-const loadChapter = (index:number) => {
-  if(props.inIsPageMode){
-    var chapter = bookChapters.value.find((item)=>item.order==index);
-    if(chapter){
-      currentBookChapters.value = [];
-      currentBookChapters.value.push(chapter);
-    }
+const no2Order = (vno:number, cno:number) => {
+  var chapter = bookChapters.value.find((item)=>(item.vno==vno) && (item.cno==cno));
+  if(chapter){
+    return chapter.order;
   }else{
-    var chapterIndexFrom = currentBookChapters.value[0].order;
-    var chapterIndexTo = currentBookChapters.value[currentBookChapters.value.length-1].order;
-
-    if(index == chapterIndexTo + 1){
-      var chapter = bookChapters.value.find((item)=>item.order==index);
-      if(chapter){
-        currentBookChapters.value.push(chapter);
-      }
-    }else if(index == chapterIndexFrom - 1){
-      var chapter = bookChapters.value.find((item)=>item.order==index);
-      if(chapter){
-        currentBookChapters.value.unshift(chapter);
-      }
-    }else if(index > chapterIndexTo + 1 || index < chapterIndexFrom - 1){
-      var chapter = bookChapters.value.find((item)=>item.order==index);
-      if(chapter){
-        currentBookChapters.value = [];
-        currentBookChapters.value.push(chapter);
-      }
-    }
+    //console.debug(`can't find vno=${vno} and cno=${cno} chapter.`);
+    return undefined;
   }
 }
 
@@ -119,96 +139,117 @@ const resetBookChapters = () => {
   bookChapters.value = [];
   if(bookObject && bookObject.value){
     if (bookObject.value) {
-      for (var volume of bookObject.value.volumes) {
-        for(var chapter of volume.chapters){
+      for (var [vno, volume] of bookObject.value.volumes.entries()) {
+        for(var [cno, chapter] of volume.chapters.entries()){
           bookChapters.value.push({
             order: order,
+            vno: vno,
+            cno: cno,
             volumeTitle: volume.title,
             chapter: chapter,
-            showed: false
           });
           order ++;
         }
       }
     }
   }
-  loadChapter(currentChapterIndex.value);
+  
+  var index = no2Order(props.inVolumeIndex, props.inChapterIndex);
+  loadChapter(index);
 }
 
-const getBookContent = async (q: string | undefined, v: string | undefined, c: string | undefined): Promise<void> => {
-  if (q === undefined) {
-    bookString.value = '';
-  } else {
-    bookString.value = q;
-  }
-  console.log(`Search, q: ${bookString.value}.`);
-  if (bookString.value.length > 0) {
-    document.title = bookString.value + ' - 开卷 阅读';
-  }
-
-  loadingStatus.value = LoadingStatus.loading;
-  try {
-    var queryString: string = `/api/book/content?q=${encodeURIComponent(bookString.value)}`;
-    if(v !== undefined){
-      queryString += `&v=${encodeURIComponent(v)}`;
-    }
-    if(c !== undefined){
-      queryString += `&c=${encodeURIComponent(c)}`;
-    }
-
-    const response = await axios.get(queryString);
-    bookString.value = response.data;
-    if (!bookString.value) {
-      toast.error(`找不到书名为:${bookString.value}的书籍。`);
-    }
-    resetBookChapters();
-
-    loadingStatus.value = LoadingStatus.done;
-  } catch (error) {
-    loadingStatus.value = LoadingStatus.error;
-    toast.error(`搜索书籍出现错误:${error}。`);
-  }
-};
-
-const gotoChapter = (isNext:boolean = true) => {
-  if(isNext){
-    if (currentChapterIndex.value < bookChapters.value.length - 1) {
-      currentChapterIndex.value++;
-    }
-  }else{
-    if (currentChapterIndex.value > 0) {
-      currentChapterIndex.value--;
+const getChapter = (index:number) => {
+  var chapter = bookChapters.value.find((item)=>item.order==index);
+  if(chapter && (chapter.chapter.paragraphs === undefined || chapter.chapter.paragraphs === null)){
+    if(props.inBookString){
+        getBookChapter(props.inBookString, undefined, index, (c)=>{
+        chapter.chapter = c;
+      });
     }
   }
-  loadChapter(currentChapterIndex.value);
-  emit('notify:chapter', currentChapterIndex.value);
+  return chapter;
 }
-
-defineExpose({ gotoChapter });
 
 const emit = defineEmits([
   'notify:chapter',
   'notify:catalogue',
 ]);
 
-const OnNextChapter = () => {
-  gotoChapter(true);
-  if(props.inIsPageMode){
-    bookReaderDiv.value?.scrollIntoView({ behavior: 'smooth' });
+const loadChapter = (index: number | undefined) => {
+  //console.debug(`loadChapter, index: ${index}, props.inIsPageMode: ${props.inIsPageMode}.`);
+
+  if(index === undefined) return;
+  if(index < 0){
+    toast.info(`前面没有章节了！已经到头了。`);
+  }else if(index > bookChapters.value.length - 1){
+    toast.info(`后面没有章节了！已经到底了。`);
   }
+
+  if(props.inIsPageMode){
+    var chapter = getChapter(index);
+    if(chapter){
+      currentBookChapters.value = [];
+      currentBookChapters.value.push(chapter);
+
+      currentChapterIndex.value = index;
+      emit('notify:chapter', index);
+      bookReaderDiv.value?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }else{
+    //console.debug(`loadChapter, start: ${currentBookChapters.value[0].order}, end: ${currentBookChapters.value[currentBookChapters.value.length-1].order}.`);
+
+    var chapterIndexFrom = currentBookChapters.value[0].order;
+    var chapterIndexTo = currentBookChapters.value[currentBookChapters.value.length-1].order;
+    if(index >= chapterIndexFrom && index <= chapterIndexTo) return;
+
+    var chapter = getChapter(index);
+    if(chapter){
+      if(index == chapterIndexTo + 1){
+        currentBookChapters.value.push(chapter);
+      }else if(index == chapterIndexFrom - 1){
+        currentBookChapters.value.unshift(chapter);
+      }else if(index > chapterIndexTo + 1 || index < chapterIndexFrom - 1){
+        currentBookChapters.value = [];
+        currentBookChapters.value.push(chapter);
+      }
+
+      currentChapterIndex.value = index;
+      emit('notify:chapter', index);
+    }
+  }
+}
+
+const OnNextChapter = () => {
+  loadChapter(currentChapterIndex.value + 1);
 };
 
 const OnPrevChapter = () => {
-  gotoChapter(true);
-  if(props.inIsPageMode){
-    bookReaderDiv.value?.scrollIntoView({ behavior: 'smooth' });
-  }
+  loadChapter(currentChapterIndex.value - 1);
 };
+
+defineExpose({ loadChapter, OnNextChapter, OnPrevChapter });
+
+const checkScroll = (event) => {
+  if(props.inIsPageMode == false){
+    // 如果用户已经滚动到页面底部（或非常接近底部）
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - (32+15)) {
+      if(currentBookChapters.value)
+        loadChapter(currentBookChapters.value[currentBookChapters.value.length-1].order + 1);
+    }
+    // 如果用户已经滚动到页面顶部（或非常接近顶部）
+    else if(window.scrollY < 5){
+      if(currentBookChapters.value)
+        loadChapter(currentBookChapters.value[0].order - 1);
+    }
+    // console.debug(`window.scrollY: ${window.scrollY}.`);
+  }
+}
+
+const debouncedCheckScroll = debounce(checkScroll, 200);
 
 const OnCatalogue = () => {
   emit('notify:catalogue');
 }
-
 </script>
 
 <style scoped>
@@ -259,6 +300,13 @@ button {
   color: var(--surface-gray-900);
   border: none;
   box-sizing: border-box;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 .navbar {

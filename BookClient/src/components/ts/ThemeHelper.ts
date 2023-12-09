@@ -220,7 +220,6 @@ export class ThemeHelper {
   setPageSize(index: number){
     if(index < 0 || index > this.pageSizes.length - 1) return;
     if(this.pageSizes[index] === 0) return;
-    console.debug(this.pageSizes[index]);
     document.documentElement.style.setProperty('--page-size', `${this.pageSizes[index]}px`);
   }
 }

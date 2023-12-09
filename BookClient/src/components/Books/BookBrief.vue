@@ -16,13 +16,12 @@
         <span class="book-update-time">入库时间 {{ props.inBook.date? props.inBook.date : '' }}</span>
       </div>
       <div class="button-group">
-        <a class="blue-button-item" href="">阅读</a>
-        <a class="blue-button-item" href="">目录</a>
-        <a class="red-button-item" href="">
+        <router-link :to="{ path: '/Reader', 'query':{q: props.inBook.title, vno: 0, cno: 0}}" class="blue-button-item">阅读</router-link>
+        <router-link :to="{ path: '/Reader', 'query':{q: props.inBook.title, vno: 0, cno: 0}}" class="red-button-item">
           <span><i class="icon-phone">
             <svg xmlns="http://www.w3.org/2000/svg"><path d="M3.3335 4.16565C3.3335 2.78494 4.45278 1.66565 5.8335 1.66565H14.1668C15.5475 1.66565 16.6668 2.78494 16.6668 4.16565V15.8323C16.6668 17.213 15.5475 18.3323 14.1668 18.3323H5.8335C4.45278 18.3323 3.3335 17.213 3.3335 15.8323V4.16565ZM5.00016 4.16565V13.3323C5.00016 13.7926 5.37326 14.1657 5.8335 14.1657H14.1668C14.6271 14.1657 15.0002 13.7926 15.0002 13.3323V4.16565C15.0002 3.70541 14.6271 3.33232 14.1668 3.33232H5.8335C5.37326 3.33232 5.00016 3.70541 5.00016 4.16565ZM10.0002 17.0823C10.5755 17.0823 11.0418 16.6159 11.0418 16.0407C11.0418 15.4654 10.5755 14.999 10.0002 14.999C9.42487 14.999 8.9585 15.4654 8.9585 16.0407C8.9585 16.6159 9.42487 17.0823 10.0002 17.0823Z"/></svg>
           </i>手机扫码读本书</span>
-        </a>
+        </router-link>
       </div>
     </div>
     <!--用 svg 实现自定义的 dash -->
@@ -87,7 +86,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 
-import { Book } from "../ts/Book";
+import { Book } from "../ts/BookDefine";
 
 // 定义外部输入的属性
 interface Props {
