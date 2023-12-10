@@ -122,18 +122,42 @@ export class ThemeHelper {
     },
   ];
   private nightId: number = 5;
+  /* 
+   * 1. font-family 规则：
+   * 西文在前，中文在后，先苹果系统中文，后windows系统中文，还需考虑android操作系统，然后是系统默认字体，最后serif，sans-serif兜底。
+   * 2. 5个字体族：
+   * serif。衬线字体族
+   * sans-serif。无衬线字体族
+   * monospace。等宽字体，即字体中每个字宽度相同
+   * cursive。草书字体
+   * fantasy。主要是那些具有特殊艺术效果的字体
+   * 3. 通用字体
+   * system-ui。系统默认字体
+   * emoji。用于兼容 emoji 表情符号字符
+   * -apple-system，BlinkMacSystemFont。 一般用于苹果系统的向后兼容在system-ui后
+   * Segoe UI。windows默认西文字体
+   * Roboto。 android默认无衬线字体
+   * 4. windows中文字体
+   * 宋体 SimSun（浏览器默认）, 黑体 SimHei, 微软雅黑 Microsoft Yahei, 微软正黑体 Microsoft JhengHei, 楷体 KaiTi, 新宋体 NSimSun, 仿宋 FangSong
+   * 5. 苹果中文字体
+   * "PingFang SC"。苹果默认的中文字体
+   * 苹方 PingFang SC, 华文黑体 STHeiti, 华文楷体 STKaiti, 华文宋体 STSong, 华文仿宋 STFangsong, 华文中宋 STZhongsong
+   * 6. 默认字体建议
+   * fontFamilys: "PingFang SC","Microsoft Yahei",system-ui,-apple-system,BlinkMacSystemFont,segoe UI,Roboto,Helvetica,Arial,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol;
+   */
   private fonts: fontFamilysOption[] = [
     {
       name: '黑体',
-      fontFamilys: '"SourceHanSansSC-Regular","SourceHanSansCN-Regular","PingFangSC-Regular","Microsoft YaHei",system-ui,"-apple-system",Segoe UI,Roboto,Emoji,Helvetica,Arial,sans-serif',
+      fontFamilys: 'SourceHanSansSC-Regular,SourceHanSansCN-Regular,PingFangSC-Regular,"Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,Emoji,Helvetica,Arial,sans-serif',
     },
     {
       name: '宋体',
       fontFamilys: 'SourceHanSerifSC-Regular,SourceHanSerifCN-Regular,STSong,Simsun,system-ui,-apple-system,Georgia,Times New Roman,Times,serif',
     },
     {
+      // 好像楷体设置在苹果的浏览器不能正确响应，但在edge和chrome中能正确显示。
       name: '楷体',
-      fontFamilys: 'STKaiti,Kaiti,Kaiti SC,system-ui,-apple-system,Georgia,Times New Roman,Times,serif',
+      fontFamilys: 'KaitiSC-Regular,STKaiti,Kaiti,system-ui,-apple-system,Georgia,Times New Roman,Times,serif',
     },
   ];
   private fontSizeBound: number[] = [12, 38];

@@ -1,25 +1,29 @@
 <template>
   <head-bar :inHeadType="HeadType.reader" :in-search-string="searchString" :in-search-range="searchRange" />
 
-  <div id="center">
+  <div id="center" ref="centerDiv">
     <book-brief v-if="chapterIndex==undefined" :in-book="bookCatalogue" />
     <book-catalogue v-if="chapterIndex==undefined" :in-book="bookCatalogue" />
     <book-reader v-if="chapterIndex!==undefined"  @notify:chapter="OnReaderChapter" @notify:catalogue="OnReaderCatalogue"
     :in-book="bookCatalogue" :in-book-string="searchString" :in-volume-index="volumeIndex" :in-chapter-index="chapterIndex"
     :inIsPageMode="currentThemeParameters.isPageMode"/>
   </div>
-  <div id="toolbar" :style="{top: positionXY.top+'px', left: positionXY.left+'px'}">
+  <div id="toolbar" v-if="chapterIndex!==undefined" :style="{top: position.top+'px', left: position.left+position.width+'px'}">
     <toolbar @notify="OnToolbar" :is-night-mode="isNightMode"/>
   </div>
-  <div id="settingpanel" :style="{top: positionXY.top+'px', right: positionXY.right+'px'}">
+  <div id="settingpanel" v-if="showSetting" :style="{top: position.top+'px', right: position.right+'px'}">
     <SettingsPanel @close="OnSettingPanelClose" @update="OnSettingPanelUpdate"
     :in-theme-parameters="currentThemeParameters" :isClosed="!showSetting"/>
+  </div>
+  <div id="catalogue" v-if="showCatalogue" :style="{left: position.left+'px', top: position.top+'px', right: position.right+'px', height: position.height+'px'}">
+    <book-catalogue @close="OnCatalogueClose" :in-book="bookCatalogue" :isDialog="true"/>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+
 import { themeParameters, ThemeHelper} from './ts/ThemeHelper';
 
 import HeadBar from "./HeadBar.vue";
@@ -36,6 +40,9 @@ import HeadType from './ts/HeadType';
 import { getBookCatalogue } from './ts/BookHelper';
 
 const route = useRoute();
+const router = useRouter();
+
+const centerDiv = ref<HTMLElement | null>(null);
 
 // 定义外部输入的属性
 interface Props {
@@ -65,7 +72,7 @@ const currentThemeParameters = ref<themeParameters>({
   currentTheme: 0,
   currentSurfaceFont: 0,
   currentFontSize: 18,
-  currentPageSize: 3,
+  currentPageSize: 1,
   isPageMode: true,
 });
 var lastDayId = 0;
@@ -73,16 +80,18 @@ const isNightMode = computed<boolean>(() => {
   return themeHelper.isNightTheme(currentThemeParameters.value.currentTheme)
 });
 const showSetting = ref<boolean>(false);
+const showCatalogue = ref<boolean>(false);
 
 // This section for get component position for change settingpanel and toolbar component position. 
-const positionXY = ref<{ top:number, left: number, right:number }>({top: 0, left: 0, right: 0});
+const position = ref<{ left: number, top:number, width:number, height:number, right:number }>({top: 0, left: 0, width: 0, height: 0, right: 0});
 const updateSize = () => {
-  const centerDiv = document.getElementById('center') as HTMLElement;
-  if (centerDiv) {
-    const computedStyle = window.getComputedStyle(centerDiv);
-    positionXY.value.top = 100;
-    positionXY.value.left = centerDiv.offsetLeft + centerDiv.offsetWidth + parseFloat(computedStyle.marginRight);
-    positionXY.value.right = window.innerWidth - (centerDiv.offsetLeft + centerDiv.offsetWidth);
+  if (centerDiv.value) {
+    const computedStyle = window.getComputedStyle(centerDiv.value);
+    position.value.top = centerDiv.value.offsetTop;
+    position.value.left = centerDiv.value.offsetLeft;
+    position.value.width = centerDiv.value.offsetWidth + parseFloat(computedStyle.marginRight);
+    position.value.height = window.innerHeight - position.value.top;
+    position.value.right = window.innerWidth - (centerDiv.value.offsetLeft + centerDiv.value.offsetWidth);
     //console.debug(`${positionXY.value.left}, ${computedStyle.marginRight}`);
   }
 };
@@ -110,12 +119,19 @@ watch(() => route.query.q, (newValue) => {
 watch(() => route.query.vno, (newValue) => {
   if (newValue !== undefined) {
     volumeIndex.value = parseInt(newValue as string);
+  }else{
+    volumeIndex.value = undefined;
   }
 });
 
-watch(() => route.query.cno, (newValue) => {
+watch(() => route.query.cno, async (newValue) => {
   if (newValue !== undefined) {
     chapterIndex.value = parseInt(newValue as string);
+  }else{
+    chapterIndex.value = undefined;
+    await nextTick();
+    //centerDiv.value?.scrollIntoView({ behavior: 'smooth' });
+    document.documentElement.scrollIntoView({ behavior: 'smooth' });
   }
 });
 
@@ -151,14 +167,16 @@ const OnReaderChapter = (chapterNum: number) => {
 
 // ReadChapter catalogue message
 const OnReaderCatalogue = () => {
-
+  showCatalogue.value = true;
 }
 
 const OnToolbar = (event:string) => {
   if(event === 'brief'){
-
+    console.debug(`searchString: ${searchString.value}.`);
+    const params: Record<string, string> = { q: searchString.value };
+    router.push({ path: '/Reader', query: params });
   }else if(event === 'catalogue'){
-    
+    showCatalogue.value = !showCatalogue.value;
   }else if(event === 'theme'){
     if(themeHelper.isNightTheme(currentThemeParameters.value.currentTheme)){
       var id = themeHelper.setTheme(lastDayId);
@@ -197,6 +215,10 @@ const OnSettingPanelUpdate = (event:string, param:any) => {
   }
 }
 
+const OnCatalogueClose = () => {
+  showCatalogue.value = false;
+}
+
 </script>
 
 <style scoped>
@@ -204,8 +226,8 @@ const OnSettingPanelUpdate = (event:string, param:any) => {
   position: relative;
   flex-grow: 1;
   justify-content: center;
-  z-index: 3;
   margin: auto 10px;
+  z-index: 3;
 }
 
 #toolbar {
@@ -220,5 +242,12 @@ const OnSettingPanelUpdate = (event:string, param:any) => {
   top: 0px;
   right: 0px;
   z-index: 4;
+}
+
+#catalogue {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 3;
 }
 </style>

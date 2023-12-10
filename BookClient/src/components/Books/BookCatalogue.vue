@@ -1,6 +1,3 @@
-
-import { ArrowDownBold } from '@element-plus/icons-vue';
-
 <template>
   <div v-if="props.inBook" class="book-catalogue">
     <div class="catalogue-header">
@@ -15,8 +12,8 @@ import { ArrowDownBold } from '@element-plus/icons-vue';
       </div>
     </div>
     <div class="catalogue-all">
-      <div class="catalogue-volume" v-for="(volume, index) in order? props.inBook.volumes : props.inBook.volumes.slice().reverse()" :key="index" @click="OnExpand(volume)">
-        <label for="vol97698856">
+      <div class="catalogue-volume" v-for="(volume, index) in order? props.inBook.volumes : props.inBook.volumes.slice().reverse()" :key="index">
+        <label for="vol97698856" @click="OnExpand(volume)">
           <div class="volume-header">
             <h3 class="volume-name">{{ volume.title }}<span v-if="volume.title.length>0" class="dot">·</span>共{{volume.chapters? volume.chapters.length : 0}}章</h3>
             <div class="volume-operate">
@@ -30,24 +27,34 @@ import { ArrowDownBold } from '@element-plus/icons-vue';
         </label>
         <ul v-if="(volume._collapse === undefined || volume._collapse === false) && volume.chapters" class="volume-chapters">
           <li class="chapter-item" v-for="(chapter, indexc) in order? volume.chapters : volume.chapters.slice().reverse()" :key="indexc">
-            <router-link :to="{ path: '/Reader', 'query':{q: props.inBook.title, vno:order? index : props.inBook.volumes.length - index - 1, cno: order? indexc : volume.chapters.length - indexc - 1}}" class="chapter-name">{{ chapter.title }}</router-link>
+            <button class="chapter-name" @click="OnChapter(order? index : props.inBook.volumes.length - index - 1, order? indexc : volume.chapters.length - indexc - 1)">{{ chapter.title }}</button>
           </li>
         </ul>
       </div>
     </div>
+    <!-- 关闭按钮 -->
+    <button v-if="props.isDialog!==undefined || props.isDialog===true" class="closebutton" @click="close">
+      <span>&#x2715;</span>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
 import { Book } from "../ts/BookDefine";
+
+const router = useRouter();
 
 // 定义外部输入的属性
 interface Props {
   inBook: Book;
+  isDialog: boolean;
 }
 var props = withDefaults(defineProps<Props>(), {
   inBook: undefined,
+  isDialog: undefined,
 });
 
 const order = ref<boolean>(true);
@@ -59,18 +66,30 @@ const OnOrder = ()=>{
 const OnExpand = (volume)=>{
   volume._collapse = (volume._collapse === undefined) || volume._collapse === false? true : false;
 } 
+
+const OnChapter = (vno:number, cno:number) => {
+  const params: Record<string, string | number> = { q: props.inBook.title, vno: vno, cno: cno };
+  router.push({ path: '/Reader', query: params });
+  close();
+}
+
+const emit = defineEmits([
+  'close',
+]);
+
+const close = () => {
+  emit('close');
+}
 </script>
 
 <style scoped>
-div {
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
 button {
   border: none;
   outline: none;
+  padding: 0;
+  border-radius: 0px;
+  background-color: transparent;
+  cursor: pointer;
 }
 
 label {
@@ -78,8 +97,11 @@ label {
 }
 
 .book-catalogue {
+  display: flex;
+  flex-direction: column;
   width: auto;
-  margin: 20px 0;
+  height: 100%;
+  /*margin: 20px 0;*/
   padding: 32px 32px 32px 32px;
   outline: 1px solid transparent;
   border-radius: 10px;
@@ -89,64 +111,72 @@ label {
   text-align: left;
 }
 
-.book-catalogue .catalogue-header {
-  position: sticky;
-  /*top: 68px;*/
-  padding: 0 32px;
-  border-radius: 10px 10px 0 0;
-  background-color: var(--background);
-  z-index: 3;
+.book-catalogue div {
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
-.book-catalogue .catalogue-header-title {
-  color: var(--surface-gray-900);
-  font-size: 28px;
-  line-height: 32px;
+.book-catalogue .catalogue-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 32px;
+}
+.catalogue-header .catalogue-header-infos {
+  display: flex;
+  flex-grow: 1;
+}
+.catalogue-header p {
+  margin-block-start: 0px;
+  margin-block-end: 0px;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+}
+.catalogue-header-infos .catalogue-header-title {
+  display: inline-block;
   margin-bottom: 8px;
   margin-top: 8px;
   pointer-events: none;
-}
-
-.book-catalogue .catalogue-header-title {
-  display: inline-block;
+  font-size: 28px;
+  line-height: 32px;
   font-weight: 600;
   vertical-align: top;
-}
-
-.book-catalogue .catalogue-header-operate {
-  position: absolute;
-  right: 16px;
-  top: 0;
-  bottom: 0;
-}
-
-.book-catalogue .catalogue-header-oi {
-  display: inline-block;
   color: var(--surface-gray-900);
-  background-color: var(--background);
+}
+
+.catalogue-header-infos .catalogue-header-operate {
+  position: relative;
+}
+
+.catalogue-header-operate .catalogue-header-oi {
+  display: inline-block;
+  padding: 10px 10px;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
-  padding: 10px 10px;
+  color: var(--surface-gray-900);
+  background-color: var(--background);
 }
 
-.book-catalogue .catalogue-header-oi:hover {
+.catalogue-header-operate .catalogue-header-oi:hover {
   border-radius: 8px;
   color: var(--primary-red-500);
   background: var(--primary-red-50);
 }
 
-.book-catalogue .catalogue-header-oi .icon {
+.catalogue-header-operate .catalogue-header-oi .icon {
   display: inline-block;
   position: relative;
+  height: 1em;
+  width: 1em;
   justify-content: center;
   align-items: center;
   font-size: 20px;
   font-weight: 400;
-  vertical-align: top;
-  height: 1em;
-  width: 1em;
   line-height: 1em;
+  vertical-align: top;
   fill: currentColor;
 }
 
@@ -156,7 +186,9 @@ label {
 }
 
 .book-catalogue .catalogue-all {
+  flex-grow: 1; /* 让 catalogue-items 占据所有剩余空间 */
   padding: 0 16px;
+  overflow: auto;
 }
 
 .book-catalogue .volume-header {
@@ -167,7 +199,7 @@ label {
   background: var(--surface-gray-50);
 }
 
-.book-catalogue .volume-name {
+.catalogue-volume .volume-name {
   padding: 11px 0;
   font-size: 18px;
   font-weight: 600;
@@ -175,11 +207,11 @@ label {
   color: var(--surface-gray-900);
 }
 
-.book-catalogue .volume-name .dot {
+.catalogue-volume .volume-name .dot {
   margin: 0 3px;
 }
 
-.book-catalogue .volume-operate {
+.catalogue-volume .volume-operate {
   position: absolute;
   right: 16px;
   top: 10px;
@@ -187,7 +219,7 @@ label {
   z-index: 2;
 }
 
-.book-catalogue .volume-col {
+.catalogue-volume .volume-col {
   display: inline-block;
   height: 28px;
   padding: 8px;
@@ -197,7 +229,7 @@ label {
   color: var(--surface-gray-900);
 }
 
-.book-catalogue .volume-col .icon {
+.catalogue-volume .volume-col .icon {
   display: inline-block;
   position: relative;
   justify-content: center;
@@ -214,14 +246,14 @@ label {
   fill: currentColor;
 }
 
-.book-catalogue .volume-chapters {
+.catalogue-volume .volume-chapters {
   display: flex;
   flex-wrap: wrap;
   margin-top: 8px;
   margin-bottom: 20px;
 }
 
-.book-catalogue .chapter-item {
+.volume-chapters .chapter-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -230,12 +262,12 @@ label {
   border-radius: 8px;
   box-sizing: border-box;
 }
-.book-catalogue .chapter-item:hover {
+.volume-chapters .chapter-item:hover {
   color: var(--primary-red-500);
   background: var(--primary-red-50);
 }
 
-.book-catalogue .chapter-name {
+.volume-chapters .chapter-name {
   display: block;
   padding: 8px 0;
   text-overflow: ellipsis;
@@ -246,7 +278,26 @@ label {
   color: var(--surface-gray-900);
 }
 
-.book-catalogue .chapter-item:hover .chapter-name {
+.volume-chapters .chapter-item:hover .chapter-name {
   color: var(--primary-red-500);
 }
+.closebutton {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  top: 20px;
+  right: 20px;
+  width: 25px;
+  height: 25px;
+  border-radius: 100%;
+  font-size: 14px;
+  color: var(--border-black-8);
+  background-color: var(--surface-gray-50);
+}
+.closebutton:hover{
+  color: var(--primary-red-500);
+  background-color: var(--surface-gray-100);
+}
+
 </style>

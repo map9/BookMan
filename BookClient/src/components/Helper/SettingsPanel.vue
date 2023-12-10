@@ -48,7 +48,7 @@
       </div>
     </div>
     <!-- 关闭按钮 -->
-    <button class="settings-closebutton" @click="closePanel">
+    <button class="closebutton" @click="close">
       <span>&#x2715;</span>
     </button>
   </div>
@@ -75,9 +75,9 @@ const props = withDefaults(defineProps<Props>(), {
   inThemeParameters: ()=> {
     return {
       currentTheme: 0,
-      currentSurfaceFont: 0,
+      currentSurfaceFont: 0,  // 黑体
       currentFontSize: 18,
-      currentPageSize: 3,
+      currentPageSize: 1,     // 800
       isPageMode: true,
     }
   },
@@ -135,7 +135,7 @@ const toggleReadMode = (mode:boolean) => {
   emit('update', 'readmode', localThemeParameters.value.isPageMode);
 }
 
-const closePanel = () => {
+const close = () => {
   isClosed.value = true;
   emit('close');
 }
@@ -145,6 +145,7 @@ const closePanel = () => {
 <style scoped>
 button {
   border: none;
+  outline: none;
   padding: 0;
   border-radius: 0px;
   cursor: pointer;
@@ -280,7 +281,7 @@ button {
   margin: 0 3px;
   padding: 0 5px;
 }
-.settings-closebutton {
+.closebutton {
   position: absolute;
   display: flex;
   justify-content: center;
@@ -295,11 +296,10 @@ button {
   background-color: var(--surface-gray-50);
 }
 
-.settings-closebutton:hover{
+.closebutton:hover{
   color: var(--primary-red-500);
   background-color: var(--surface-gray-100);
 }
-
 .noise-bg {
 background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAQAAABLCVATAAAAAXNSR…qy6fUEbRs1CruoCM5zlPaIIL6/biLs0edft/d7IfjhT9gfL6wnSxDYPyIAAAAASUVORK5CYII=);
 background-attachment: scroll;

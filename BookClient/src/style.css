@@ -23,7 +23,7 @@
   /* book reader font size*/
   --reader-font-family: "SourceHanSansSC-Regular","SourceHanSansCN-Regular","PingFangSC-Regular","Microsoft YaHei",system-ui,"-apple-system",Segoe UI,Roboto,Emoji,Helvetica,Arial,sans-serif;
   /* page width */
-  --page-size: 1000px;
+  --page-size: 800px;
 
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
