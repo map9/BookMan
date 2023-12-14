@@ -2,7 +2,7 @@
   <div v-if="searchResults && searchResults.length > 0" class="books-container">
     <div v-for="(book, index) in searchResults" :key="index" class="book-card">
       <div class="book-cover-wrapper" @click="OnReader(book)">
-        <img src="/book-cover.jpg" :alt="book.title" class="book-cover">
+        <img src="@/assets/book-cover.jpg" :alt="book.title" class="book-cover">
         <div class="book-title-overlay">
           <h3 class="book-title">{{ book.title }}</h3>
         </div>
@@ -16,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
 
 import LoadingStatus from "../ts/LoadingStatus";

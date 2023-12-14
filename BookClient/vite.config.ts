@@ -20,13 +20,13 @@ export default defineConfig({
     extensions:['.mjs','.js','.ts','.jsx','.tsx','.json'],
   },
   server: {             
-    host: '0.0.0.0',	
+    host: '127.0.0.1',	
     // port: 8080,      
     open: true,
     proxy: {
       // 设置代理
       "/api": {
-        target: "http://0.0.0.0:6060", // 访问数据的计算机域名，不能用localhost，好像有安全问题，访问返回403
+        target: "http://127.0.0.1:6060", // 访问数据的计算机域名，不能用localhost，好像有安全问题，访问返回403
         ws: true, // 是否启用websockets
         changeOrigin: true, //开启代理,
         // 重写代理规则，/api开头，代理到 /api

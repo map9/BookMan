@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, onMounted, onUnmounted, nextTick, computed, watch, defineEmits } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useToast } from "vue-toastification";
 
 import { debounce } from 'lodash-es';

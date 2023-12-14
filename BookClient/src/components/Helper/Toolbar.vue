@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineEmits, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 
 // 定义外部输入的属性
 interface Props {

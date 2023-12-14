@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, withDefaults, watchEffect, defineEmits } from 'vue';
+import { ref, withDefaults, watchEffect } from 'vue';
 
 import { themeParameters, ThemeHelper} from '../ts/ThemeHelper';
 

@@ -1,7 +1,7 @@
 <template>
   <div v-if="props.inBook" ref="bookBriefDiv" class="book-brief">
     <div v-if="(totalWidth>=940) || !(props.inBook.authors && props.inBook.authors.length)" class="book-cover-wrapper">
-      <img src="/book-cover.jpg" :alt="props.inBook.title" class="book-cover">
+      <img src="@/assets/book-cover.jpg" :alt="props.inBook.title" class="book-cover">
       <div class="book-title-overlay">
         <h3 class="book-title">{{ props.inBook.title }}</h3>
       </div>

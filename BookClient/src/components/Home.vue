@@ -3,7 +3,7 @@
   <div id="center">
     <div class="center-container">
       <div class="logo">
-        <img alt="KaiJuan" src="/logo.svg">
+        <img alt="KaiJuan" src="@/assets/logo.svg">
       </div>
       <search-bar ref="searchBar" />
       <div class="center-buttons-container">

@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, defineEmits, computed } from 'vue';
+import { ref, computed } from 'vue';
 import LoadingStatus from "../ts/LoadingStatus";
 import { Book, BookChapterItem } from "../ts/BookDefine"
 

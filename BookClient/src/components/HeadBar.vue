@@ -9,7 +9,7 @@
       <div v-else class="header-item-group">
         <router-link to="/" class="header-item-links">
           <div class="logo" >
-            <img alt="KaiJuan" src="/logo.svg">
+            <img alt="KaiJuan" src="@/assets/logo.svg">
           </div>
         </router-link>
         <div class="header-item-warper">
@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 import SearchBar from "./Search/SearchBar.vue";
 
 import { SearchRange } from "./ts/BookDefine";
