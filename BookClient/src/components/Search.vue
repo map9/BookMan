@@ -7,11 +7,6 @@
       <div v-if="searchResults.result_pieces && searchResults.result_pieces.length > 0" class="search-results-container">
         <div class="search-results-content-container">
           <search-result :search-results="searchResults.result_pieces" :loading-status="loadingStatus"/>
-          <el-row justify="end" class="inline-row">
-            <el-link :underline="false" type="info">
-              View more<el-icon class="el-icon--right"><arrow-right /></el-icon>
-            </el-link>
-          </el-row>
         </div>
         <div class="search-results-book-directory">
           <book-directory :search-results="searchResults.result_pieces" :loading-status="loadingStatus"
@@ -92,14 +87,14 @@ const search = async (q: string|undefined): Promise<void> => {
     loadingStatus.value = LoadingStatus.done;
     if (searchResults.value.result_pieces) {
       for (var book of searchResults.value.result_pieces) {
-        book.hitCount = 0;
-        book.checkStatus = true;
+        book._hitCount = 0;
+        book._checkStatus = true;
         for (var volume of book.volumes) {
           for (var chapter of volume.chapters) {
-            if (chapter.hits) {
-              chapter.hitCount = chapter.hits.length;
-              chapter.checkStatus = true;
-              book.hitCount += chapter.hitCount;
+            if (chapter._hits) {
+              chapter._hitCount = chapter._hits.length;
+              chapter._checkStatus = true;
+              book._hitCount += chapter._hitCount;
             }
           }
         }

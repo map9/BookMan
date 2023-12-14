@@ -25,18 +25,6 @@ const routes: Array<RouteRecordRaw> = [
 		meta: { title: '开卷 阅读' },
 		component:()=>import('../components/Reader.vue'),
 	},
-	{
-		path: '/test',
-		name: 'test',
-		meta: { title: '开卷 测试' },
-		component:()=>import('../components/Helper/SettingsPanel.vue'),
-	},
-	{
-		path: '/test1',
-		name: 'test1',
-		meta: { title: '开卷 测试' },
-		component:()=>import('../components/Books/BookCatalogue.vue'),
-	},
 ]
 
 const router = createRouter({

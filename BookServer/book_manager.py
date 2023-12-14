@@ -165,9 +165,9 @@ class BookManager(object):
 									_volume = {'title': volume["title"], 'chapters': []}
 									pieces['volumes'].append(_volume)
 								if _chapter is None:
-									_chapter = {'title': chapter["title"], 'hits': []}
+									_chapter = {'title': chapter["title"], '_hits': []}
 									_volume['chapters'].append(_chapter)
-								_chapter['hits'].append(content)
+								_chapter['_hits'].append(content)
 								pieces_count += 1
 
 			logging.debug(pieces)
@@ -679,7 +679,7 @@ class QueryResults():
 			for volume in book['volumes']:
 				_volume = {'title': volume['title'], 'chapters': []}
 				for chapter in volume['chapters']:
-					chapter_len = len(chapter['hits'])
+					chapter_len = len(chapter['_hits'])
 					end_count = current_count + chapter_len
 					# 如果start超过了本章节，直接continue，避免执行后面的动作
 					if start >= end_count:
@@ -691,8 +691,8 @@ class QueryResults():
 					# 如果end不为None，判断to是否在当前章节内
 					if to is not None:
 						end_idx = min(to - current_count, chapter_len)
-					_chapter = {'title': chapter['title'], 'hits': []}
-					_chapter['hits'] = chapter['hits'][start_idx:end_idx]
+					_chapter = {'title': chapter['title'], '_hits': []}
+					_chapter['_hits'] = chapter['_hits'][start_idx:end_idx]
 					_volume['chapters'].append(_chapter)
 
 					current_count += chapter_len
@@ -750,7 +750,7 @@ class QueryResults():
 		for piece in pieces:
 			for volume in piece['volumes']:
 				for chapter in volume['chapters']:
-					current_count += len(chapter['hits'])
+					current_count += len(chapter['_hits'])
 		
 		return current_count
 	
@@ -837,7 +837,7 @@ class QueryResults():
 			for book in self._result_pieces:
 				for volume in book['volumes']:
 					for chapter in volume['chapters']:
-						for hit in chapter['hits']:
+						for hit in chapter['_hits']:
 							index += 1
 							output_string += "<tr>"
 							if len(volume['title']):
@@ -855,7 +855,7 @@ class QueryResults():
 			for book in self._result_pieces:
 				for volume in book['volumes']:
 					for chapter in volume['chapters']:
-						for hit in chapter['hits']:
+						for hit in chapter['_hits']:
 							index += 1
 							if len(volume['title']):
 								output_string += f"|{index}|{book['title']}|{volume['title']}·{chapter['title']}|"
@@ -867,7 +867,7 @@ class QueryResults():
 			for book in self._result_pieces:
 				for volume in book['volumes']:
 					for chapter in volume['chapters']:
-						for hit in chapter['hits']:
+						for hit in chapter['_hits']:
 							index += 1
 							if len(volume['title']):
 									output_string += f"{index}. {book['title']} {volume['title']}·{chapter['title']}\n"

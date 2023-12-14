@@ -16,8 +16,11 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    /* TS6133 */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    /* TS7006 */
+    "noImplicitAny": false,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

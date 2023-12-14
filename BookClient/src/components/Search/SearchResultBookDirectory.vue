@@ -22,7 +22,7 @@
     <div v-if="subShowType == ShowType.library" class="book-directory">
       <div v-for="(book, index) in searchResults" :key="index" class="book-chapter">
         <div class="book-chapter-checkbox">
-          <input type="checkbox" v-model="book.checkStatus">
+          <input type="checkbox" v-model="book._checkStatus">
         </div>
         <div class="book-chapter-body" @click="OnBookClick(book)">
           <div class="book-chapter-icon">
@@ -62,7 +62,7 @@
             </div>
             <div class="book-chapter-title-wraper">
               <div class="book-chapter-title">{{ chapter.title }}</div>
-              <div class="book-chapter-detail"><span>共{{ chapter.hitCount }}个Hits。</span></div>
+              <div class="book-chapter-detail"><span>共{{ chapter._hitCount }}个Hits。</span></div>
             </div>
             <!--
             <div class="book-chapter-arrow-wraper">
@@ -109,7 +109,7 @@ const currentBook = ref<Book>();
 const currentHitsCount = computed<number>(()=>{
   var count = 0;
   for(var book of props.searchResults){
-    count += (book.hitCount && book.checkStatus && book.checkStatus===true)? book.hitCount : 0;
+    count += (book._hitCount && book._checkStatus && book._checkStatus===true)? book._hitCount : 0;
   }
   return count;
 });
@@ -117,7 +117,7 @@ const currentHitsCount = computed<number>(()=>{
 const currentBookCount = computed<number>(()=>{
   var count = 0;
   for(var book of props.searchResults){
-    count += (book.checkStatus && book.checkStatus===true)? 1 : 0;
+    count += (book._checkStatus && book._checkStatus===true)? 1 : 0;
   }
   return count;
 });
@@ -132,9 +132,9 @@ const calculateBookSummy = (book: Book) => {
     chapterCount += volume.chapters.length;
   }
   if (volumeCount > 1)
-    return `共${volumeCount}卷${chapterCount}章，${book.hitCount}个Hits。`;
+    return `共${volumeCount}卷${chapterCount}章，${book._hitCount}个Hits。`;
   else
-    return `共${chapterCount}章，${book.hitCount}个Hits。`;
+    return `共${chapterCount}章，${book._hitCount}个Hits。`;
 }
 
 const OnBookLibraryClick = () => {
@@ -175,27 +175,27 @@ const OnChapterClick = (book_title: string, volume_title: string, chapter_title:
   width: 320px;
   min-width: 280px;
   overflow: hidden;
-  background: #fff;
+  background: var(--background);
   line-height: 1.58em;
   text-align: left;
   font-size: 14px;
   border-radius: 8px;
-  border: 1px solid #dadce0;
+  border: 1px solid var(--border-black-8);
 }
 
 .container:hover{
-  box-shadow: 0 9px 8px -3px rgba(64, 60, 67, .24), 8px 0 8px -7px rgba(64, 60, 67, .24), -8px 0 8px -7px rgba(64, 60, 67, .24);
+  box-shadow: 0 4px 24px var(--shadow-16);
 }
 
 .book-title {
   padding: 14px 16px;
   font-size: 20px;
-  color: #202124;
+  color: var(--surface-gray-900);
 }
 .book-title-detail {
-  color: #70757a;
-  overflow: hidden;
   font-size: 14px;
+  color: var(--surface-gray-500);
+  overflow: hidden;
 }
 
 .book-title-inner {
@@ -206,9 +206,9 @@ const OnChapterClick = (book_title: string, volume_title: string, chapter_title:
   margin: 0 4px;
 }
 .book-title-icon {
-  margin-left: auto;
   width: 38px;
   height: 38px;
+  margin-left: auto;
   fill: currentColor;
   cursor: pointer;
 }
@@ -221,23 +221,24 @@ const OnChapterClick = (book_title: string, volume_title: string, chapter_title:
 .book-volume {
   padding: 4px 16px;
   font-size: 16px;
-  color: #202124;
-  background-color: #eeeeee;
-  border-top: 1px solid #dadce0;
+  color: var(--surface-gray-500);
+  background-color: var(--surface-gray-50);
+  border-top: 1px solid var(--border-black-8);
 }
 
 .book-chapter {
-  padding-left: 16px;
-  font-size: 18px;
-  color: #202124;
-  border-top: 1px solid #dadce0;
-  overflow: hidden;
   display: flex;
   align-items: center;
+  padding-left: 16px;
+  font-size: 18px;
+  color: var(--surface-gray-900);
+  border-top: 1px solid var(--border-black-8);
+  overflow: hidden;
 }
 
 .book-chapter:hover {
-  background-color: #dadce0;
+  color: var(--primary-red-500);
+  background-color: var(--primary-red-50);
 }
 
 .book-chapter-body {
@@ -258,8 +259,8 @@ const OnChapterClick = (book_title: string, volume_title: string, chapter_title:
 .book-chapter-title-wraper {
   padding: 0 10px 0 0;
   min-height: 40px;
-  overflow: hidden;
   font-size: 14px;
+  overflow: hidden;
 }
 
 .book-chapter-title {
@@ -271,15 +272,15 @@ const OnChapterClick = (book_title: string, volume_title: string, chapter_title:
 }
 
 .book-chapter-detail {
-  color: #70757a;
-  overflow: hidden;
   font-size: 14px;
+  color: var(--surface-gray-500);
+  overflow: hidden;
 }
 
 .book-chapter-arrow-wraper {
-  color: #70757a;
   margin-left: auto;
   padding-top: 8px;
+  color: var(--surface-gray-500);
 }
 
 .book-chapter-arrow {

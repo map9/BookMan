@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 import logging
 from book_manager import BookManager, QueryObject, QueryResults
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', force=True)
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', force=True)
 
 # 实例化并命名为 app 实例
 app = Flask(__name__)
@@ -34,9 +34,9 @@ def search_book_library():
         for book in query_results.result_pieces:
           for volume in book['volumes']:
             for chapter in volume['chapters']:
-              for index, hit in enumerate(chapter['hits']):
+              for index, hit in enumerate(chapter['_hits']):
                 hit = query_results.highlights(hit, format=QueryResults.MARK_TEXT, strong = True, surround = surround)
-                chapter['hits'][index] = hit
+                chapter['_hits'][index] = hit
 
       return jsonify({
           "query_target_count": query_results.query_target_count,

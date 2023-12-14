@@ -31,7 +31,7 @@ const bookReaderDiv = ref<HTMLElement | null>(null);
 
 // 定义外部输入的属性
 interface Props {
-  inBook?: Book;
+  inBook?: Book | null;
   inBookString?: string;
   inVolumeIndex?: number;
   inChapterIndex?: number;
@@ -53,7 +53,7 @@ const loadingStatus = ref(LoadingStatus.idle);
 // 父组件传入参数属于异步调用，因此，需要采用watch来监视传入参数的变化，
 // 以便执行操作。
 watch(() => props.inBook, (newValue) => {
-  if (newValue !== undefined) {
+  if (newValue !== undefined && newValue !== null) {
     bookObject.value = newValue;
     resetBookChapters();
   }
@@ -103,8 +103,10 @@ onMounted(async () => {
       });
     }
   }else{
-    bookObject.value = props.inBook;
-    resetBookChapters();
+    if(props.inBook !== null){
+      bookObject.value = props.inBook;
+      resetBookChapters();
+    }
   }
 });
 
@@ -162,8 +164,8 @@ const getChapter = (index:number) => {
   var chapter = bookChapters.value.find((item)=>item.order==index);
   if(chapter && (chapter.chapter.paragraphs === undefined || chapter.chapter.paragraphs === null)){
     if(props.inBookString){
-        getBookChapter(props.inBookString, undefined, index, (c)=>{
-        chapter.chapter = c;
+        getBookChapter(props.inBookString, undefined, index, (c: Chapter)=>{
+        if(chapter) chapter.chapter = c;
       });
     }
   }

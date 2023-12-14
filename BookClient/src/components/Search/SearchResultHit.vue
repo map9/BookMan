@@ -20,6 +20,6 @@ defineProps<Props>();
   line-height: 20px;
   font-size: 14px;
   text-align: left;
-  color: #9195a3;
+  color: var(--surface-gray-500);
 }
 </style>

@@ -2,17 +2,21 @@
   <div ref="searchBarContainer" class="full-container"
     :style="(!(searchHistory && searchHistory.length > 0) && isInputFocused || (!isInputFocused && !isListFocused)) ? 'border-radius: 22px;' : 'border-radius: 22px 22px 0 0;'">
     <div class="searchbar-container">
-      <el-icon class="listitem-icon">
-        <Search />
-      </el-icon>
+      <div class="listitem-icon">
+        <i class="icon">
+          <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6c3.2 3.2 8.4 3.2 11.6 0l43.6-43.5c3.2-3.2 3.2-8.4 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/></svg>
+        </i>
+      </div>
       <div class="input-container">
         <input ref="searchInput" v-model="searchString" class="searchbar" type="text" title="Input search string"
           @keydown.enter="OnSearch" @focus="OnInputFocus" @blur="OnInputBlur">
         <span class="clear-icon" :style="clearIconStyle" @click="clear" title="Clear input string">&#x2715;</span>
       </div>
-      <el-icon class="voice-icon">
-        <Camera />
-      </el-icon>
+      <div class="voice-icon">
+        <i class="icon">
+          <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M451.131077 1024C434.333538 1024 420.706462 1010.766769 420.706462 994.461538 420.706462 978.136615 434.333538 964.923077 451.131077 964.923077L472.615385 964.923077 472.615385 905.846154C322.363077 892.691692 204.091077 771.899077 177.230769 630.153846L236.307692 630.153846C264.014769 748.504615 381.676308 846.769231 512 846.769231 642.323692 846.769231 759.985231 748.504615 787.692308 630.153846L846.769231 630.153846C819.908923 771.899077 701.636923 892.691692 551.384615 905.846154L551.384615 964.923077 572.868923 964.923077C589.666462 964.923077 603.293538 978.136615 603.293538 994.461538 603.293538 1010.766769 589.666462 1024 572.868923 1024L451.131077 1024ZM512 787.692308C394.338462 787.692308 295.384615 685.272615 295.384615 571.076923L295.384615 196.923077C295.384615 82.727385 394.338462 0 512 0 629.661538 0 728.615385 82.727385 728.615385 196.923077L728.615385 571.076923C728.615385 685.272615 629.661538 787.692308 512 787.692308ZM669.538462 196.923077C669.538462 115.357538 596.046769 59.076923 512 59.076923 427.953231 59.076923 354.461538 115.357538 354.461538 196.923077L354.461538 571.076923C354.461538 652.642462 427.953231 728.615385 512 728.615385 596.046769 728.615385 669.538462 652.642462 669.538462 571.076923L669.538462 196.923077Z" /></svg>
+        </i>
+      </div>
     </div>
   </div>
   <div :style="{ width: searchHistoryContainerWidth + 'px'}"
@@ -31,9 +35,11 @@
       </li>
       -->
       <li v-for="(item, index) in searchHistory" :key="index" class="listitem-container" @click="OnListClick(item)">
-        <el-icon class="listitem-icon">
-          <Search />
-        </el-icon>
+        <div class="listitem-icon">
+          <i class="icon">
+            <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6c3.2 3.2 8.4 3.2 11.6 0l43.6-43.5c3.2-3.2 3.2-8.4 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"/></svg>
+          </i>
+        </div>
         <span class="listitem-text">{{ item.searchString }}</span>
       </li>
     </ul>
@@ -255,13 +261,14 @@ const OnListMouseLeave = () => {
 }
 
 .voice-icon {
-  flex-shrink: 0;
-  /* 防止图标在容器空间不足时缩小 */
-  margin-right: 15px;
+  display: block;
   width: 42px;
   height: 24px;
+  margin-right: 15px;
   font-size: 22px;
+  box-sizing: content-box;
   color: var(--primary-red-500);
+  fill: var(--primary-red-500);
   cursor: pointer;
 }
 
@@ -322,13 +329,29 @@ ul {
 }
 
 .listitem-icon {
-  flex-shrink: 0;
-  /* 防止图标在容器空间不足时缩小 */
+  display: block;
   width: 42px;
   height: 24px;
-  color: var(--surface-gray-500);
+  padding-left: 5px;
+  font-size: 22px;
+  box-sizing: content-box;
+  color: var(--primary-gray-500);
+  fill: var(--surface-gray-500);
 }
 
+.icon {
+  display: inline-block;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  fill: currentColor;
+}
+
+.icon svg {
+  height: 1em;
+  width: 1em;
+}
 .listitem-text {
   display: flex;
   /* 使用flex布局 */

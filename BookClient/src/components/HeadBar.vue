@@ -23,9 +23,9 @@
         <router-link v-if="props.inHeadType==HeadType.library || props.inHeadType==HeadType.reader" to="/" class="header-item-links">Search</router-link>
         <router-link v-if="props.inHeadType!=HeadType.library "  to="/Library" class="header-item-links">Library</router-link>
         <a href="" class="header-item-links grid">
-          <el-icon>
-            <Grid />
-          </el-icon>
+          <i class="icon">
+            <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M170.666667 170.666667h170.666666v170.666666H170.666667z m256 0h170.666666v170.666666h-170.666666z m256 0h170.666666v170.666666h-170.666666zM170.666667 426.666667h170.666666v170.666666H170.666667z m256 0h170.666666v170.666666h-170.666666z m256 0h170.666666v170.666666h-170.666666zM170.666667 682.666667h170.666666v170.666666H170.666667z m256 0h170.666666v170.666666h-170.666666z m256 0h170.666666v170.666666h-170.666666z" /></svg>
+          </i>
         </a>
         <button class="header-item-button" type="button">Sign in</button>
       </div>
@@ -129,6 +129,20 @@ const searchRange = computed(()=>{
   border-radius: 50%;
   color: var(--primary-red-500);
   background: var(--primary-red-50);
+}
+
+.grid .icon {
+  display: inline-block;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  fill: currentColor;
+}
+
+.icon svg {
+  height: 1em;
+  width: 1em;
 }
 
 /* 让包含 search-bar 的左侧 header-item-group 填充所有可用空间 */

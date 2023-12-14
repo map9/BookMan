@@ -1,9 +1,9 @@
 export interface themeParameters {
-  currentTheme?: number;
-  currentSurfaceFont?: number;
-  currentFontSize?: number;
-  currentPageSize?: number;
-  isPageMode?: boolean;
+  currentTheme: number;
+  currentSurfaceFont: number;
+  currentFontSize: number;
+  currentPageSize: number;
+  isPageMode: boolean;
 }
 
 export interface themeOption {

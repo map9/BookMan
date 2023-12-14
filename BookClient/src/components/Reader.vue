@@ -8,7 +8,7 @@
     :in-book="bookCatalogue" :in-book-string="searchString" :in-volume-index="volumeIndex" :in-chapter-index="chapterIndex"
     :inIsPageMode="currentThemeParameters.isPageMode"/>
   </div>
-  <div id="toolbar" v-if="chapterIndex!==undefined" :style="{top: position.top+'px', left: position.left+position.width+'px'}">
+  <div id="toolbar" v-if="chapterIndex!==undefined" :style="{top: position.top+20+'px', left: position.left+position.width+'px'}">
     <toolbar @notify="OnToolbar" :is-night-mode="isNightMode"/>
   </div>
   <div id="settingpanel" v-if="showSetting" :style="{top: position.top+'px', right: position.right+'px'}">
@@ -172,9 +172,12 @@ const OnReaderCatalogue = () => {
 
 const OnToolbar = (event:string) => {
   if(event === 'brief'){
-    console.debug(`searchString: ${searchString.value}.`);
-    const params: Record<string, string> = { q: searchString.value };
-    router.push({ path: '/Reader', query: params });
+    if(searchString.value){
+      const params: Record<string, string> = { q: searchString.value };
+      router.push({ path: '/Reader', query: params });
+    }else{
+      console.error(`searchString: ${searchString.value} is undefined.`);
+    }
   }else if(event === 'catalogue'){
     showCatalogue.value = !showCatalogue.value;
   }else if(event === 'theme'){
@@ -248,6 +251,6 @@ const OnCatalogueClose = () => {
   position: fixed;
   top: 0px;
   left: 0px;
-  z-index: 3;
+  z-index: 5;
 }
 </style>

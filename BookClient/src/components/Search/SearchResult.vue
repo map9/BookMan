@@ -58,13 +58,13 @@ const result_pieces = computed<searchResultsPiece[]>(() => {
   var pieces: searchResultsPiece[] = [];
 
   for (let book of props.searchResults) {
-    if (book.checkStatus === undefined || book.checkStatus === false)
+    if (book._checkStatus === undefined || book._checkStatus === false)
       continue;
     for (let volume of book.volumes) {
       for (let chapter of volume.chapters) {
-        if (!chapter.hits) continue;
+        if (!chapter._hits) continue;
 
-        for (let hit of chapter.hits) {
+        for (let hit of chapter._hits) {
           pieces.push({
             book_title: book.title,
             volume_title: volume.title,
@@ -95,7 +95,7 @@ a {
 }
 
 a:hover {
-  color: green;
+  color: var(--surface-gray-900);
 }
 
 p {
@@ -109,11 +109,12 @@ p {
 
 /* 
 v-html指令会导致定义了scoped的css因作用域的问题无法使用，
-采用v-deep可以实现css穿透。 
+采用v-deep可以实现css穿透。
+::v-deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of ::v-deep <inner-selector>. 
 */
-::v-deep mark {
+:deep(mark) {
   background: transparent;
-  color: blue;
+  color: var(--primary-red-500);
   font-weight: 500;
 }
 
@@ -131,21 +132,21 @@ v-html指令会导致定义了scoped的css因作用域的问题无法使用，
   margin: 0px 0px 8px 0px;
   font-size: 18px;
   border-radius: 8px;
-  background-color: #fefefe;
+  background-color: var(--background);
   border: 1px solid transparent;
   transition: box-shadow 0.3s ease-in-out;
 }
 
 .result-content-wrapper:hover {
-  border: 1px solid #efefef;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-black-8);
+  box-shadow: 0 4px 24px var(--shadow-16);
 }
 
 .result-before {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #888888;
+  color: var(--surface-gray-500);
   width: 20px;
   padding: 0 3px;
 }
@@ -154,42 +155,42 @@ v-html指令会导致定义了scoped的css因作用域的问题无法使用，
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  line-height: 22px;
-  margin: 8px 20px 0px 8px;
   width: 100%;
+  margin: 8px 20px 0px 8px;
+  line-height: 22px;
 }
 
 .book-path {
-  align-items: center;
   display: flex;
+  align-items: center;
   margin: 8px 0px;
 }
 
 .book-content {
-  color: #333333;
+  color: var(--surface-gray-900);
   font-size: 18px;
 }
 
 .book-title {
-  color: #666666;
+  padding: 0px 4px 0px 0px;
   font-weight: 500;
   font-size: 13px;
-  padding: 0px 4px 0px 0px;
+  color: var(--surface-gray-500);
 }
 
 .book-volume-chapter {
-  color: #888888;
   font-weight: 400;
   font-size: 13px;
+  color: var(--surface-gray-500);
 }
 .book-hit-copy {
   width: 22px;
   height: 22px;
   margin-left: auto;
-  fill: #aaa;
+  fill: var(--surface-gray-500);
   cursor: pointer;
 }
 .book-hit-copy:hover {
-  fill: red;
+  fill: var(--primary-red-500);
 }
 </style>

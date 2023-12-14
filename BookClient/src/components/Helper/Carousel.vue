@@ -97,21 +97,21 @@ onUnmounted(stopAutoPlay);
 }
 
 .carousel .carousel-control-prev, .carousel .carousel-control-next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  border-radius: 100%;
-  font-size: 12px;
-  text-align: center;
   display: inline-flex;
+  position: absolute;
   justify-content: center;
   align-items: center;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  text-align: center;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 100%;
+  cursor: pointer;
 }
 
 .carousel .icon {
@@ -119,11 +119,11 @@ onUnmounted(stopAutoPlay);
   position: relative;
   justify-content: center;
   align-items: center;
+  height: 1em;
+  width: 1em;
   font-size: 12px;
   font-weight: 400;
   vertical-align: top;
-  height: 1em;
-  width: 1em;
   line-height: 1em;
   fill: currentColor;
 }

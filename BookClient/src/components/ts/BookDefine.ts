@@ -34,11 +34,11 @@ export interface Chapter{
   // 段落集合
   paragraphs?: Paragraph[];
   // 搜索片段集合
-  hits?: string[];
+  _hits?: string[];
   // 搜索片段数量
-  hitCount?: number;
+  _hitCount?: number;
   // 界面显示的状态
-  checkStatus?: boolean;
+  _checkStatus?: boolean;
 }
 
 // 卷
@@ -48,6 +48,8 @@ export interface Volume {
   title: string;
   // 章节集合
   chapters: Chapter[];
+  // 章节显示是否收起
+  _collapse?: boolean;
 }
 
 export interface Author {
@@ -83,9 +85,9 @@ export interface Book {
   // 卷集合
   volumes: Volume[];
   // 搜索片段数量
-  hitCount?: number;
+  _hitCount?: number;
   // 界面显示的状态
-  checkStatus?: boolean;
+  _checkStatus?: boolean;
 }
 
 // 定义接口来描述searchResult中的对象

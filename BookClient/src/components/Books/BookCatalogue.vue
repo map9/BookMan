@@ -49,7 +49,7 @@ const router = useRouter();
 
 // 定义外部输入的属性
 interface Props {
-  inBook: Book;
+  inBook: Book | null;
   isDialog: boolean;
 }
 var props = withDefaults(defineProps<Props>(), {
@@ -68,6 +68,7 @@ const OnExpand = (volume)=>{
 } 
 
 const OnChapter = (vno:number, cno:number) => {
+  if(props.inBook === null) return;
   const params: Record<string, string | number> = { q: props.inBook.title, vno: vno, cno: cno };
   router.push({ path: '/Reader', query: params });
   close();
@@ -169,10 +170,10 @@ label {
 .catalogue-header-operate .catalogue-header-oi .icon {
   display: inline-block;
   position: relative;
-  height: 1em;
-  width: 1em;
   justify-content: center;
   align-items: center;
+  height: 1em;
+  width: 1em;
   font-size: 20px;
   font-weight: 400;
   line-height: 1em;
