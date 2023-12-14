@@ -6,3 +6,4 @@ flask_server
 
 .DS_Store
 *.ipynb
+color_map.py
