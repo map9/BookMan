@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <style>
+    :root {
+      --title-color: 0, 0, 0;
+      --font-family-songti: SourceHanSerifSC-Regular, SourceHanSerifCN-Regular, STSong, Simsun, system-ui, -apple-system, Georgia, Times New Roman, Times, serif;
+      --font-family-heiti: SourceHanSansSC-Regular, SourceHanSansCN-Regular, PingFangSC-Regular, "Microsoft YaHei", system-ui, -apple-system, Segoe UI, Roboto, Emoji, Helvetica, Arial, sans-serif;
+    }
+
+    html,
+    body {
+      width: 600px;
+      margin: 10px 10px 10px 30px;
+      font-family: var(--font-family-heiti);
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    h3 {
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    h4 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    p {
+      font-size: 18px;
+      line-height: 22px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      color: rgb(var(--title-color));
+      font-family: var(--font-family-songti);
+      margin-block-start: 1em;
+      margin-block-end: 1em;
+      margin-inline-start: 0px;
+      margin-inline-end: 0px;
+    }
+
+    p {
+      margin-block-start: 0em;
+      margin-block-end: 0em;
+      margin-inline-start: 0px;
+      margin-inline-end: 0px;
+    }
+    
+    .prefix {
+      color: rgba(var(--title-color), 0.5);
+      font-size: smaller;
+    }
+
+    .author {
+      font-family: var(--font-family-heiti);
+      font-size: 14px;
+    }
+
+    .author .dynasty {
+      color: blue;
+    }
+
+    .author .position {
+      color: blueviolet;
+    }
+
+    .author .name {
+      color: black;
+    }
+
+    .author .type {
+      color: brown;
+    }
+
+    .section {
+      font-family: var(--font-family-songti);
+      font-size: 20px;
+      font-weight: 500;
+      text-align: justify;
+    }
+
+    .paragraph-div {
+      display: flex;
+      margin: 10px 0px 5px -30px;
+      padding: 4px 0px;
+    }
+
+    .paragraph-div .id {
+      display: inline-block;
+      margin-left: 6px;
+      margin-right: 6px;
+      width: 30px;
+      height: 20px;
+      text-align: center;
+      font-size: 12px;
+      font-family: var(--font-family-heiti);
+      color: snow;
+      background-color: gainsboro;
+      border-radius: 4px;
+    }
+
+    .paragraph-div .paragraph {
+      flex-grow: 1;
+      text-align: justify;
+      line-height: 24px;
+      font-family: var(--font-family-heiti);
+      font-size: 18px;
+      color: darkblue;
+    }
+
+    .annotation {
+      margin: 10px 0px 5px 10px;
+      padding: 4px 8px;
+      text-align: justify;
+      font-family: var(--font-family-songti);
+      font-size: 14px;
+      /* light gray */
+      color: #000000B0;
+      background-color: #00000008;
+      border-radius: 4px;
+      border: 1px solid #00000008;
+    }
+
+    .inner {
+      margin-inline-end: 8px;
+      padding: 2px 4px;
+      font-size: smaller;
+    }
+
+    .style01 {
+      /* light gray */
+      color: #000000B0;
+      background-color: #00000008;
+    }
+    .style02 {
+      /* firebrick */
+      color: #B22222E0;
+      background-color: #B2222208;
+    }
+    .style03 {
+      color: #777700F0;
+      background-color: #FFFF000F;
+    }
+    .style04 {
+      color: #008B8B;
+      background-color: #F5FFFAE0;
+    }
+    .style05 {
+      color: #0000FFA0;
+      background-color: #0000FF10;
+    }
+
+    .annotation .annotator {
+      font-size: 10px;
+      color: currentColor;
+    }
+
+    .annotation .type {
+      font-size: 10px;
+      color: currentColor;
+      border-radius: 2px;
+      border: 1px solid currentColor;
+    }
+
+    .annotation .content {
+      color: blue;
+    }
+
+    .annotation p {
+      font-size: 14px;
+    }
+  </style>
+
+  <title>Advanced TypeScript - Chapter 2</title>
+</head>
+
+<body>
+  <h1>毛诗正义</h1>
+  <p class="author"><span class="dynasty">[战国]</span><span class="name">孔子</span><span class="type">辑</span></p>
+  <p class="author"><span class="dynasty">[西汉]</span><span class="name">毛亨</span><span class="type">传</span></p>
+  <p class="author"><span class="dynasty">[东汉]</span><span class="name">郑玄</span><span class="type">笺</span></p>
+  <p class="author"><span class="dynasty">[唐]</span><span class="name">孔颖达</span><span class="type">疏</span></p>
+  <p class="author"><span class="dynasty">[唐]</span><span class="name">陆德明</span><span class="type">音义</span></p>
+  <p class="author"><span class="dynasty">[现代]</span><span class="name">孔祥军</span><span class="type">点校</span></p>
+
+  <h2>国风·邶风</h2>
+  <h3>二子乘舟</h3>
+  <div class="annotation">
+    <p class=""><span class="type">注</span>&nbsp;<span class="section">序</span>
+    </p>
+  </div>
+
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">《二子乘舟》，思伋、寿也。卫宣公之二子争相为死，国人伤而思之，作是诗也。
+      <annotation class="annotation inner style04"><span class="type">音义</span>&nbsp;<span class="">○为，于伪反。</span>
+      </annotation>
+    </p>
+  </div>
+
+  <div class="annotation style03">
+    <p class=""><span class="annotator">孔颖达</span>&nbsp;<span class="type">疏</span></p>
+    <p class="">“《二子乘舟》二章，章四句”至“是诗”。</p>
+    <p class="">○正义曰：作《二子乘舟》诗者，思伋、寿也。卫宣公之二子伋与寿，争相为死，故国人哀伤而思念之，而作是《二子乘舟》之诗也。二子争相为死，即首章二句是也。国人伤而思之，下二句是也。</p>
+  </div>
+
+  <div class="annotation">
+    <p class=""><span class="type">注</span>&nbsp;<span class="section">第一章</span></p>
+  </div>
+
+  <div class="paragraph-div">
+    <p><span class="id">1</span></p>
+    <p class="paragraph">二子乘舟，汎汎其景。</p>
+  </div>
+
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">
+      二子，伋、寿也。宣公为伋取于齐女而美，公夺之，生寿及朔。朔与其母伋于公，公令伋之齐，使贼先待于隘而杀之。寿知之，以告伋，使去之。伋曰：“君命也，不可以逃。”寿窃其节而先往，贼杀之。伋至，曰：“君命杀我，寿有何罪？”贼又杀之。国人伤其涉危遂往，如乘舟而无所薄，汎汎然迅疾而不碍也。
+      <annotation class="annotation inner style04"><span class="type">音义</span>&nbsp;<span class="">○汎，芳劍反。景如字，或音影。愬，蘇路反。令，力征反。隘，于賣反。駛疾，所吏反；本或無「駛」字；一本作「迅疾」。</span></annotation>
+    </p>
+  </div>
+
+  <div class="paragraph-div">
+    <p><span class="id">2</span></p>
+    <p class="paragraph">愿言思子，中心养养。</p>
+  </div>
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">愿，每也。养养然忧不知所定。</p>
+  </div>
+  <div class="annotation style02">
+    <p class=""><span class="annotator">郑玄</span>&nbsp;<span class="type">笺</span></p>
+    <p class="">笺云：愿，念也。念我思此二子，心为之忧养养然。</p>
+  </div>
+  <div class="annotation style03">
+    <p class=""><span class="annotator">孔颖达</span>&nbsp;<span class="type">疏</span></p>
+    <p class="">“二子”至“养养”。</p>
+    <p class="">○毛以为，二子伋、寿争相为死，赴死似归，不顾其生，如乘舟之无所薄，观之汎汎然，见其影之去往而不碍。犹二子争死，遂往而亦不碍也。故我国人伤之，每有所言，思此二子，则中心为之忧养养然，不知所定。</p>
+    <p class="">○郑唯以“愿言思子”为“念我思此二子”为异。</p>
+    <p class="">传“二子”至“不碍”。</p>
+    <p class="">
+      ○正义曰：以序云“思伋、寿”，故知二子伋、寿也。传因言二子争死之由，其言与桓十六年《左传》小异大同也。此言“伋于公”，《传》言“构伋子”。服虔云“构，会其过恶”，亦是之也。此言“先待于隘”，《传》言“使盗待诸莘”。服虔云“莘，卫东地”，则莘与隘一处也。此言君命不可逃也，寿窃其节而先往，《传》言“寿子告之，使行。不可，曰：弃父之命，恶用子矣？有无父之国则可也。‘及行，饮以酒。寿子载其旌以先”。此文不足，亦当如《传》饮以酒也。旌、节不同，盖载旌旗以为节信也。《卫世家》所说与《左传》略同，云“寿盗其白旄而先”。言白旄者，或以白旄为旌节也。言“国人伤其涉危遂往”者，解经以乘舟为喻之意。以二子遂往，不爱其死，如乘舟无所薄，汎汎然迅疾而不碍。无所薄犹涉危也，谓涉渡危难而取死。下言“其影”，以其影谓舟影，观其去而见其影，义取其遂往不还，故卒章云“其逝”。传曰“逝，往”，谓舟汎汎然，其形往，影形可见，故言往也。
+    </p>
+  </div>
+
+  <div class="annotation">
+    <p class=""><span class="type">注</span>&nbsp;<span class="section">第二章</span></p>
+  </div>
+
+  <div class="paragraph-div">
+    <p><span class="id">3</span></p>
+    <p class="paragraph">二子乘舟，汎汎其逝。</p>
+  </div>
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">逝，往也。</p>
+  </div>
+
+  <div class="paragraph-div">
+    <p><span class="id">4</span></p>
+    <p class="paragraph">愿言思子，不瑕有害。</p>
+  </div>
+  
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">言二子之不远害。</p>
+  </div>
+
+  <div class="annotation style02">
+    <p class=""><span class="annotator">郑玄</span>&nbsp;<span class="type">笺</span></p>
+    <p class="">笺云：瑕犹过也。我思念此二子之事，于行无过差，有何不可而不去也？
+      <annotation class="annotation inner style04"><span class="type">音义</span>&nbsp;<span
+          class="">○害，毛如字，郑音曷，何也。远，于万反。</span></annotation>
+    </p>
+  </div>
+
+  <div class="annotation style03">
+    <p class=""><span class="annotator">孔颖达</span>&nbsp;<span class="type">疏</span></p>
+    <p class="">“二子”至“有害”。</p>
+    <p class="">○正义曰：下二句毛、郑别。</p>
+    <p class="">笺“我念”至“不去”。</p>
+    <p class="">○正义曰：此国人思念之至，故追言其本，何为不去而取死。深闵之之辞也。</p>
+  </div>
+
+  <div class="annotation">
+    <p class=""><span class="type">注</span>&nbsp;<span class="section">总结</span></p>
+  </div>
+
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">《二子乘舟》二章，章四句。</p>
+  </div>
+
+  <div class="annotation style01">
+    <p class=""><span class="annotator">毛亨</span>&nbsp;<span class="type">传</span></p>
+    <p class="">邶国十九篇，七十一章，三百六十三句。</p>
+  </div>
+
+  <h1>史记三家注</h1>
+  <p class="author"><span class="dynasty">[西汉]</span><span class="position">太史令</span><span class="name">司马迁</span><span
+      class="type">撰</span></p>
+  <p class="author"><span class="dynasty">[宋]</span><span class="position">中郎外兵曹参军</span><span
+      class="name">裴骃</span><span class="type">集解</span></p>
+  <p class="author"><span class="dynasty">[唐]</span><span class="position">国子博士弘文馆学士</span><span
+      class="name">司马贞</span><span class="type">索隐</span></p>
+  <p class="author"><span class="dynasty">[唐]</span><span class="position">诸王侍读率府长史</span><span
+      class="name">张守节</span><span class="type">正义</span></p>
+
+  <h2>史记卷一</h2>
+  <h3>五帝本纪第一</h3>
+
+  <div class="annotation style01">
+    <p class=""><span class="annotator">裴骃</span>&nbsp;<span class="type">集解</span></p>
+    <p class="">凡是徐氏义，称徐姓名以别之。馀者悉是骃注解，并集众家义。</p>
+  </div>
+
+  <div class="annotation style02">
+    <p class=""><span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span></p>
+    <p class="">纪者，记也。本其事而记之，故曰本纪。又纪，理也，丝缕有纪。而帝王书称纪者，言为后代纲纪也。</p>
+  </div>
+
+  <div class="annotation style03">
+    <p class=""><span class="annotator">张守节</span>&nbsp;<span class="type">正义</span></p>
+    <p class="">
+      郑玄注《中候敕省图》云：“德合五帝坐星者，称帝。”又坤灵图云：“德配天地，在正不在私，曰帝。”案：太史公依《世本》、《大戴礼》，以黄帝、颛顼、帝喾、唐尧、虞舜为五帝。谯周、应劭、宋均皆同。而孔安国《尚书·序》，皇甫谧《帝王世纪》，孙氏注《世本》，并以伏牺、神农、黄帝为三皇，少昊、颛顼、高辛、唐、虞为五帝。裴松之《史目》云“天子称本纪，诸侯曰世家”。本者，系其本系，故曰本；纪者，理也，统理众事，系之年月，名之曰纪；第者，次序之目；一者，举数之由，故曰《五帝本纪第一》。《礼》云：“动则左史书之，言则右史书之。”《正义》云：“左阳，故记动。右阴，故记言。言为《尚书》，事为《春秋》。”案：春秋时置左右史，故云《史记》也。
+    </p>
+  </div>
+  <div class="paragraph-div">
+    <p><span class="id">1</span></p>
+    <p class="paragraph">&#8195&#8195
+      黄帝者，
+      <annotation class="annotation inner style01">
+        <span class="annotator">裴骃</span>&nbsp;<span class="type">集解</span>&nbsp;
+        徐广曰：“号有熊。”
+      </annotation>
+      <annotation class="annotation inner  style02">
+        <span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span>&nbsp;
+        案：有土德之瑞，土色黄，故称黄帝，犹神农火德王而称炎帝然也。此以黄帝为五帝之首，盖依《大戴礼·五帝德》。又谯周、宋均亦以为然。而孔安国、皇甫谧《帝王代纪》及孙氏注《系本》并以伏牺、神农、黄帝为三皇，少昊、高阳、高辛、唐、虞为五帝。注“号有熊”者，以其本是有熊国君之子故也。亦号轩辕氏。皇甫谧云：“居轩辕之丘，因以为名，又以为号。”又据《左传》，亦号帝鸿氏也。
+      </annotation>
+      <annotation class="annotation inner  style03">
+        <span class="annotator">张守节</span>&nbsp;<span class="type">正义</span>&nbsp;
+        《舆地志》云：“涿鹿本名彭城，黄帝初都，迁有熊也。”案：黄帝有熊国君，乃少典国君之次子，号曰有熊氏，又曰缙云氏，又曰帝鸿氏，亦曰帝轩氏。母曰附宝，之祁野，见大电绕北斗枢星，感而怀孕，二十四月而生黄帝于寿丘。寿丘在鲁东门之北，今在兖州曲阜县东北六里。生日角龙颜，有景云之瑞，以土德王，故曰黄帝。封泰山，禅亭亭。亭亭在牟阴。
+      </annotation>
+      少典之子，
+      <annotation class="annotation inner  style01">
+        <span class="annotator">裴骃</span>&nbsp;<span class="type">集解</span>&nbsp;
+        谯周曰：“有熊国君，少典之子也。”皇甫谧曰：“有熊，今河南新郑是也。”
+      </annotation>
+      <annotation class="annotation inner  style02">
+        <span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span>&nbsp;
+        少典者，诸侯国号，非人名也。又案：《国语》云“少典娶有蟜氏女，生黄帝、炎帝”。然则炎帝亦少典之子。炎黄二帝虽则相承，如帝王代纪中闲凡隔八帝，五百馀年。若以少典是其父名，岂黄帝经五百馀年而始代炎帝后为天子乎？何其年之长也！又案：秦本纪云“颛顼氏之裔孙曰女修，吞鸟之卵而生大业，大业娶少典氏而生柏翳”。明少典是国号，非人名也。黄帝即少典氏后代之子孙，贾逵亦谓然，故《左传》“高阳氏有才子八人”，亦谓其后代子孙而称为子是也。谯周字允南，蜀人，魏散骑常侍征，不拜。此注所引者，是其人所著古史考之说也。皇甫谧字士安，晋人，号玄晏先生。今所引者，是其所作帝王代纪也。
+      </annotation>
+      姓公孙，名曰轩辕。
+      <annotation class="annotation inner  style02">
+        <span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span>&nbsp;
+        案：皇甫谧云“黄帝生于寿丘，长于姬水，因以为姓。居轩辕之丘，因以为名，又以为号”。是本姓公孙，长居姬水，因改姓姬。
+      </annotation>
+      生而神灵，弱而能言，
+      <annotation class="annotation inner  style02">
+        <span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span>&nbsp;
+        弱谓幼弱时也。盖未合能言之时而黄帝即言，所以为神异也。潘岳有哀弱子篇，其子未七旬曰弱。
+      </annotation>
+      <annotation class="annotation inner  style03">
+        <span class="annotator">张守节</span>&nbsp;<span class="type">正义</span>&nbsp;
+        言神异也。易曰“阴阳不测之谓神”，书云“人惟万物之灵”，故谓之神灵也。
+      </annotation>
+      幼而徇齐，
+      <annotation class="annotation inner style01">
+        <span class="annotator">裴骃</span>&nbsp;<span class="type">集解</span>&nbsp;
+        徐广曰：“墨子‘年逾十五，则聪明心虑无不徇通矣’。”骃案：徇，疾；齐，速也。言圣德幼而疾速也。
+      </annotation>
+      <annotation class="annotation inner style02">
+        <span class="annotator">司马贞</span>&nbsp;<span class="type">索隐</span>&nbsp;
+        斯文未是。今案：徇，齐，皆德也。书曰“聪明齐圣”，《左传》曰“子虽齐圣”，谓圣德齐肃也。又案：孔子家语及大戴礼并作“叡齐”，一本作“慧齐”。叡，慧，皆智也。太史公采大戴礼而为此纪，今彼文无作“徇”者。史记旧本亦有作“濬齐”。盖古字假借“徇”为“濬”，濬，深也，义亦并通。《尔雅》“齐”“速”俱训为疾。《尚书大传》曰“多闻而齐给”。郑注云“齐，疾也”。今裴氏注云徇亦训疾，未见所出。或当读“徇”为“迅”，迅于《尔雅》与齐俱训疾，则迅濬虽异字，而音同也。又《尔雅》曰“宣，徇，遍也。濬，通也”。是“遍”之与“通”义亦相近。言黄帝幼而才智周遍，且辩给也。故墨子亦云“年逾五十，则聪明心虑不徇通矣”。俗本作“十五”，非是。案：谓年老逾五十不聪明，何得云“十五”？
+      </annotation>
+      长而敦敏，成而聪明。
+      <annotation class="annotation inner style03">
+        <span class="annotator">张守节</span>&nbsp;<span class="type">正义</span>&nbsp;
+        成谓二十冠，成人也。聪明，闻见明辩也。此以上至“轩辕”，皆大戴礼文。
+      </annotation>
+    </p>
+  </div>
+
+  <h1><span class="prefix">贯华堂第五才子书</span>水浒传</h1>
+  <p class="author"><span class="dynasty">[明]</span><span class="name">施耐庵</span><span class="type">著</span></p>
+  <p class="author"><span class="dynasty">[清]</span><span class="name">金圣叹</span><span class="type">批评</span></p>
+  
+  <h3><span class="prefix">第一回</span>王教头私走延安府　九纹龙大闹史家村</h3>
+  <div class="paragraph-div">
+    <p><span class="id">1</span></p>
+    <p class="paragraph">&#8195&#8195
+      话说故宋，哲宗皇帝在时，其时去仁宗天子已远，
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        只是顺手从楔子写来，却将从来国步升降，天运循环，一笔提尽，使读者便有上失其道，忆散乐矣之痛也。
+      </annotation>
+      东京开封府汴梁宣武军 ，便有一个浮浪破落户子弟，
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        开书第一样脚色。作书者盖深著破国亡家，结怨连祸之皆由是辈始也。○言子弟则有为之父兄者矣，失教之罪，谁实任之？
+      </annotation>
+      姓高，排行第二，自小不成家业，只好刺枪使棒，最是得好脚气毬。京师人口顺，不叫高二，却都叫他做高毬。后来发迹，便将气毬那字去了“毛傍”，添作“立人”，改作姓高，名俅。
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        毛旁者何物也，而居然自以为立人，人亦从而立人之，盖当时诸公衮衮者，皆是也。○奇绝之文。
+      </annotation>
+      这人吹弹歌舞，刺枪使棒，相扑顽耍，亦胡乱学诗书词赋；若论仁义礼智，信行忠良，却是不会，
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        甚矣，诗书词赋之易，而仁义礼智能信行忠良之难也，观于高俅，不其然乎！
+      </annotation>
+      只在东京城里城外帮闲。因帮了一个生铁王员外儿子使钱，
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        生铁之子未有不使钱者，可笑可叹。
+      </annotation>
+      每日三瓦两舍，风花雪月，被他父亲在开封府里告了一纸文状，府尹把高俅断了二十脊杖，迭配出界发放，东京城里人民不许容他在家宿食。
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        极写高俅狼狈，以深恶之也。○不容他在家，却容他在朝，天实为之，谓之何哉！
+      </annotation>
+      高俅无计奈何，只得来淮西，临淮州，投奔一个开赌坊的闲汉柳大郎，名唤柳世权。他平生专好惜客，养闲人，招纳四方干隔涝汉子。
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        奇句。
+      </annotation>
+    </p>
+  </div>
+  <div class="paragraph-div">
+    <p><span class="id">2</span></p>
+    <p class="paragraph">&#8195&#8195
+      高俅投托得柳大郎家，一住三年。
+      <annotation class="annotation inner style01">
+        <span class="annotator">金圣叹</span>&nbsp;<span class="type">夹批</span>&nbsp;
+        一路以年计，以月计，以日计，皆史公章法。○一住三年。
+      </annotation>
+      后来哲宗天子因拜南郊，感得风调雨顺，放宽恩，大赦天下。那高俅在临淮州因得了赦宥罪犯，思量要回东京。这柳世权却和东京城里金梁桥下开生药铺的董将仕是亲戚，写了一封书札，收拾些人事盘缠，赍发高俅回东京投奔董将仕家过活。
+    </p>
+  </div>
+</body>
+
+
+</html>

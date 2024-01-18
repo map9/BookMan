@@ -25,6 +25,12 @@ const routes: Array<RouteRecordRaw> = [
 		meta: { title: '开卷 阅读' },
 		component:()=>import('../components/Reader.vue'),
 	},
+	{
+		path: '/Editor',
+		name: 'Editor',
+		meta: { title: '开卷 编辑' },
+		component:()=>import('../components/Editor.vue'),
+	},
 ]
 
 const router = createRouter({
