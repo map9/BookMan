@@ -121,273 +121,393 @@ enum MarkType {
   */
   Annotation, // 注释内容
 
-  /* 主要是注释 */
-  DownLevel, // 下一级
-
   /*
     ---
 
     <hr></hr>
   */
-  HorizontalRule, // 分隔栏
+  Break, // 分隔栏
 }
 
-interface MarktoParseContent {
+interface ClosingTagStack {
   mark: MarkType;
-  openingTag: string;
-  content: string;
   closingTag: string;
   level: number;
 }
 
 interface IHtmlParseDocument {
-  getStyle(author: string): string;
-  Add(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void;
-  Get(): string;
+  isHeader(mark: MarkType): boolean;
+  isHeader3(mark: MarkType): boolean;
+  isAnnotation(mark: MarkType): boolean;
+
+  getAuthorStyle(author: string): string;
+
+  getLineCount(): number;
+  ResetLineCount(): void;
+
+  getClosingTagStack(): ClosingTagStack[];
+  RollbackClosingTags(reservedCount?: number): void;
+  PopClosingTagStack(): void;
+  AddClosingTagStack(mark: MarkType, closingTag: string, level: number): void;
+
+  AddContent(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void;
+  GetContent(): string;
 }
 
-interface IMarkElementParse {
+interface IBookMarkParse {
   Parse(currentLine: string, parseContent?: (content: string) => string): boolean;
 }
 
-class HtmlParseNoteHandler implements IMarkElementParse {
-  constructor(protected readonly type: MarkType, protected readonly mark: string) {}
+class BookMarkParseHandler implements IBookMarkParse {
+  constructor(protected readonly type: MarkType, protected readonly mark: string, protected readonly tag: string, protected readonly document: IHtmlParseDocument) {}
 
-  Parse(currentLine: string): boolean {
-    let split = currentLine.startsWith(`${this.mark}`);
-    if (split == false) {
-      return false;
-    }
+  protected CanHandle(currentLine: string, downlevelMark?: string): [boolean, string, number] {
+    if (downlevelMark) {
+      let split = false;
+      let mark = this.mark;
+      let length = this.mark.length;
+      let level = 0;
+      let count = currentLine.length / downlevelMark.length;
+      let _downlevelMark = downlevelMark;
 
-    return true;
-  }
-}
-
-class HtmlParseHeaderHandler implements IMarkElementParse {
-  constructor(
-    protected readonly type: MarkType,
-    protected readonly mark: string,
-    protected readonly tag: string,
-    protected readonly document: IHtmlParseDocument,
-    protected readonly parseContent?: (content: string) => string
-  ) {}
-
-  Parse(currentLine: string): boolean {
-    let split = currentLine.startsWith(`${this.mark}`);
-    if (split == false) {
-      return false;
-    }
-
-    let content = currentLine.substr(this.mark.length);
-    this.document.Add(this.type, `<${this.tag}>`, this.parseContent ? this.parseContent(content) : content, `</${this.tag}>\n`);
-    return true;
-  }
-}
-
-function parseTitleContent(content: string): string {
-  let title: string[] = content.split(`|`);
-  if (title.length == 2) {
-    return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}`;
-  } else if (title.length == 3) {
-    return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}<span class='subtitle'><span class='separator'> </span>${title[2]}</span>`;
-  } else {
-    return content;
-  }
-}
-
-function parseBookTitleContent(content: string): string {
-  return parseTitleContent(content);
-}
-
-function parseVolumeTitleContent(content: string): string {
-  return parseTitleContent(content);
-}
-
-function parseChapterTitleContent(content: string): string {
-  return parseTitleContent(content);
-}
-
-class htmlParseAuthorHandler implements IMarkElementParse {
-  constructor(
-    protected readonly type: MarkType,
-    protected readonly mark: string,
-    protected readonly tag: string,
-    protected readonly document: IHtmlParseDocument,
-    protected readonly parseContent?: (content: string) => string
-  ) {}
-
-  Parse(currentLine: string): boolean {
-    let split = currentLine.startsWith(`${this.mark}`);
-    if (split == false) {
-      return false;
-    }
-
-    let content = currentLine.substr(this.mark.length);
-    this.document.Add(this.type, `<${this.tag} class="author">`, this.parseContent ? this.parseContent(content) : content, `</${this.tag}>\n`);
-    return true;
-  }
-}
-
-function parseAuthorContent(content: string): string {
-  let attributes: string[] = content.split(`,`);
-  if (attributes.length == 1) {
-    return `<span class="name">${attributes[0]}</span>`;
-  } else if (attributes.length == 2) {
-    return `<span class="name">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span>`;
-  } else if (attributes.length == 3) {
-    return `<span class="dynasty">[${attributes[0]}]</span>&nbsp;<span class="name">${attributes[1]}</span>&nbsp;<span class="type">${attributes[2]}</span>`;
-  } else if (attributes.length == 4) {
-    return `<span class="dynasty">[${attributes[0]}]</span>&nbsp;<span class="position">${attributes[1]}</span>&nbsp;<span class="name">${attributes[2]}</span>&nbsp;<span class="type">${attributes[3]}</span>`;
-  } else {
-    return content;
-  }
-}
-
-// AnnotationHeader
-class htmlParseAnnotationHeaderHandler implements IMarkElementParse {
-  constructor(
-    protected readonly type: MarkType,
-    protected readonly mark: string,
-    protected readonly tag: string,
-    protected readonly downlevelMark: string,
-    protected readonly downlevelTag: string,
-    protected readonly document: IHtmlParseDocument,
-    protected readonly parseContent?: (content: string) => string
-  ) {}
-
-  Parse(currentLine: string): boolean {
-    let length = this.mark.length;
-    let split = false;
-    let mark = this.mark;
-    let downlevelMark = this.downlevelMark;
-    let level = 0;
-    let count = currentLine.length / this.downlevelMark.length;
-    for (let i = 0; i < count; i++) {
-      split = currentLine.startsWith(`${mark}`);
-      if (split == true) {
-        length += this.downlevelMark.length * i;
-        level += i;
-        break;
-      } else {
-        split = currentLine.startsWith(`${downlevelMark}`);
+      for (let i = 0; i < count; i++) {
+        split = currentLine.startsWith(`${mark}`);
         if (split == true) {
-          mark = this.downlevelMark + mark;
-          downlevelMark = this.downlevelMark + downlevelMark;
-          continue;
+          length = mark.length;
+          level += i;
+          break;
         } else {
-          return false;
+          split = currentLine.startsWith(`${_downlevelMark}`);
+          if (split == true) {
+            mark = downlevelMark + mark;
+            _downlevelMark = downlevelMark + _downlevelMark;
+            continue;
+          } else {
+            return [false, "", 0];
+          }
         }
       }
+      if (split == false) {
+        return [false, "", 0];
+      }
+
+      return [true, currentLine.substr(length), level];
+    } else {
+      let split = currentLine.startsWith(`${this.mark}`);
+      if (split == false) {
+        return [false, "", 0];
+      }
+
+      return [true, currentLine.substr(this.mark.length), 0];
     }
-    if (split == false) {
+  }
+
+  protected parseTitleContent(content: string): string[] {
+    let title: string[] = content.split(`|`);
+    if (title.length <= 3) return title;
+    else return [content];
+  }
+
+  protected parseAuthorContent(content: string): string[] {
+    let attributes: string[] = content.split(`,`);
+    if (attributes.length <= 4) return attributes;
+    else return [content];
+  }
+
+  Parse(currentLine: string): boolean {
+    return false;
+  }
+}
+
+// 内部注释行，编译时忽略
+class HtmlParseNoteHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
+
+  Parse(currentLine: string): boolean {
+    const [canHandle] = this.CanHandle(currentLine);
+    if (canHandle == false) return false;
+
+    return true;
+  }
+}
+
+class HtmlParseBreakHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
+
+  Parse(currentLine: string): boolean {
+    const [canHandle] = this.CanHandle(currentLine);
+    if (canHandle == false) return false;
+
+    this.document.RollbackClosingTags();
+    this.document.AddContent(this.type, `<${this.tag}>`, ``, `\n`);
+
+    return true;
+  }
+}
+
+// 书名、卷名、章节名
+class HtmlParseHeaderHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
+
+  private parseContent(content: string): string {
+    let title: string[] = this.parseTitleContent(content);
+    if (title.length == 2) {
+      return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}`;
+    } else if (title.length == 3) {
+      return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}<span class='separator'>&nbsp;</span><span class='subtitle'>${title[2]}</span>`;
+    } else {
+      return content;
+    }
+  }
+
+  Parse(currentLine: string): boolean {
+    const [canHandle, content] = this.CanHandle(currentLine);
+    if (canHandle == false) return false;
+
+    // 遇到书名、卷名、章名，重置行计数值
+    this.document.ResetLineCount();
+
+    // 回滚之前 Mark 的 HTML 尾部标签（ClosingTag）
+    // 遇到书名、卷名、章名、节名全部回滚之前的尾部标签
+    this.document.RollbackClosingTags();
+    this.document.AddContent(this.type, `<${this.tag}>`, this.parseContent(content), `</${this.tag}>\n`);
+
+    return true;
+  }
+}
+
+// 著作者
+class htmlParseAuthorHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
+
+  private parseContent(content: string): string {
+    let attributes: string[] = this.parseAuthorContent(content);
+    if (attributes.length == 1) {
+      return `<span class="name">${attributes[0]}</span>`;
+    } else if (attributes.length == 2) {
+      return `<span class="name">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span>`;
+    } else if (attributes.length == 3) {
+      return `<span class="dynasty">[${attributes[0]}]</span>&nbsp;<span class="name">${attributes[1]}</span>&nbsp;<span class="type">${attributes[2]}</span>`;
+    } else if (attributes.length == 4) {
+      return `<span class="dynasty">[${attributes[0]}]</span>&nbsp;<span class="position">${attributes[1]}</span>&nbsp;<span class="name">${attributes[2]}</span>&nbsp;<span class="type">${attributes[3]}</span>`;
+    } else {
+      return content;
+    }
+  }
+
+  Parse(currentLine: string): boolean {
+    const [canHandle, content] = this.CanHandle(currentLine);
+    if (canHandle == false) return false;
+
+    this.document.RollbackClosingTags();
+    this.document.AddContent(this.type, `<${this.tag} class="author">`, this.parseContent(content), `</${this.tag}>\n`);
+
+    return true;
+  }
+}
+
+// 注释头
+class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, protected readonly downlevelMark: string, protected readonly downlevelTag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
+
+  private parseContent(content: string, level: number): [string, string] {
+    let parsedContent = "";
+    let style = "";
+    let attributes: string[] = this.parseAuthorContent(content);
+
+    if (attributes.length == 1) {
+      parsedContent = 
+        level == 0
+          ? (attributes[0].length
+            ? `  <p><span class="type">${attributes[0]}</span></p>\n`
+            : "")
+          : (attributes[0].length
+            ? `<span class="type">${attributes[0]}</span>`
+            : "");
+      style = this.document.getAuthorStyle(attributes[0]);
+    } else if (attributes.length == 2) {
+      parsedContent =
+        level == 0
+          ? `  <p><span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span></p>\n`
+          : `<span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span>`;
+      style = this.document.getAuthorStyle(attributes[0]);
+    } else {
+      parsedContent = ``;
+    }
+
+    return [parsedContent, style];
+  }
+
+  _Parse(content: string, level: number): boolean {
+    let closingTagStack = this.document.getClosingTagStack();
+    if (closingTagStack.length == 0 && level > 0){
+      // add warning statement
       return false;
     }
 
-    let content = currentLine.substr(length);
+    // 回滚
+    let lastMarkType = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].mark : MarkType.None;
+    let lastMarkLevel = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].level : 0;
 
-    if (level == 0) {
-      let parsedContent = "";
-      let style = "";
+    // 如果level > lastMarkLevel，当前是文内注释头，不需要回滚
+    // 如果level = lastMarkLevel是一致的，需要回滚到同级别注释的上一个注释头。
+    // 如果level < lastMarkLevel是下降的，也需要回滚到同级别注释上一个注释头。
+    if (level <= lastMarkLevel) {
+      if (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) {
+        let count: number = closingTagStack.length;
+        for (let i = count - 1; i >= 0; i--) {
+          let lastMarkType = closingTagStack[closingTagStack.length - 1].mark;
+          let lastMarkLevel = closingTagStack[closingTagStack.length - 1].level;
 
-      let attributes: string[] = content.split(`,`);
-      if (attributes.length == 1) {
-        parsedContent = `  <p><span class="type">${attributes[0]}</span></p>\n`;
-        style = this.document.getStyle(attributes[0]);
-      } else if (attributes.length == 2) {
-        parsedContent = `  <p><span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span></p>\n`;
-        style = this.document.getStyle(attributes[0]);
+          if (level == lastMarkLevel && lastMarkType == MarkType.AnnotationHeader) {
+            this.document.PopClosingTagStack();
+            break;
+          } else {
+            this.document.PopClosingTagStack();
+          }
+        }
       } else {
-        parsedContent = `  <p></p>\n`;
+        this.document.RollbackClosingTags();
       }
-
-      this.document.Add(this.type, `<${this.tag} class="annotation ${style}">\n`, parsedContent, `</${this.tag}>\n`, level);
-    } else {
-      let parsedContent = "";
-      let style = "";
-
-      let attributes: string[] = content.split(`,`);
-      if (attributes.length == 1) {
-        parsedContent = `<span class="type">${attributes[0]}</span>`;
-        style = this.document.getStyle(attributes[0]);
-      } else if (attributes.length == 2) {
-        parsedContent = `<span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span>`;
-        style = this.document.getStyle(attributes[0]);
-      } else {
-        parsedContent = `<span></span>`;
-      }
-
-      this.document.Add(this.type, `  <${this.downlevelTag} class="annotation inner ${style}">`, parsedContent, `</${this.downlevelTag}>\n`, level);
     }
 
+    let [parsedContent, style] = this.parseContent(content, level);
+    this.document.AddContent(this.type, level == 0 ? `<${this.tag} class="annotation ${style}">\n` : `  <${this.downlevelTag} class="annotation inner ${style}">`, parsedContent, "", level);
+    this.document.AddClosingTagStack(this.type, level == 0 ? `</${this.tag}>\n` : `</${this.downlevelTag}>\n`, level);
+
     return true;
+  }
+
+  Parse(currentLine: string): boolean {
+    const [canHandle, content, level] = this.CanHandle(currentLine, this.downlevelMark);
+    if (canHandle == false) return false;
+
+    return this._Parse(content, level);
   }
 
   InsertDefaultHeader(level: number): void {
-    if (level == 0) {
-      this.document.Add(this.type, `<${this.tag} class="annotation">\n`, "", `</${this.tag}>\n`, level);
-    } else {
-      this.document.Add(this.type, `  <${this.tag} class="annotation inner">`, "", `</${this.tag}>`, level);
-    }
+    this._Parse("", level);
   }
 }
 
-// Annotation
-class htmlParseAnnotationHandler implements IMarkElementParse {
-  constructor(
-    protected readonly type: MarkType,
-    protected readonly mark: string,
-    protected readonly tag: string,
-    protected readonly downlevelMark: string,
-    protected readonly downlevelTag: string,
-    protected readonly document: IHtmlParseDocument,
-    protected readonly parseContent?: (content: string) => string
-  ) {}
+// 注释内容
+class htmlParseAnnotationHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, protected readonly downlevelMark: string, protected readonly downlevelTag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
 
   Parse(currentLine: string): boolean {
-    let length = this.mark.length;
-    let split = false;
-    let mark = this.mark;
-    let downlevelMark = this.downlevelMark;
-    let level = 0;
-    let count = currentLine.length / this.downlevelMark.length;
-    for (let i = 0; i < count; i++) {
-      split = currentLine.startsWith(`${mark}`);
-      if (split == true) {
-        length += this.downlevelMark.length * i;
-        level += i;
-        break;
-      } else {
-        split = currentLine.startsWith(`${downlevelMark}`);
-        if (split == true) {
-          mark = this.downlevelMark + mark;
-          downlevelMark = this.downlevelMark + downlevelMark;
-          continue;
+    const [canHandle, content, level] = this.CanHandle(currentLine, this.downlevelMark);
+    if (canHandle == false) return false;
+
+    let closingTagStack = this.document.getClosingTagStack();
+    if (closingTagStack.length == 0) {
+      if (level > 0){
+        // add warning statement
+        return false;
+      }
+      let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this.document);
+      htmlParseHandle.InsertDefaultHeader(level);
+    } else {
+      for (let i = closingTagStack.length - 1; i >= 0; i--) {
+        let lastMarkType = closingTagStack[i].mark;
+        let lastMarkLevel = closingTagStack[i].level;
+
+        if (lastMarkLevel <= level) {
+          if (level == lastMarkLevel && (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation)) {
+            break;
+          } else {
+            let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this.document);
+            htmlParseHandle.InsertDefaultHeader(level);
+            break;
+          }
         } else {
-          return false;
+          // add warning statement
+          console.error(`mark: ${this.mark}, content: ${currentLine}.`);
         }
       }
     }
-    if (split == false) {
-      return false;
+
+    // 回滚
+    let lastMarkType = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].mark : MarkType.None;
+    let lastMarkLevel = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].level : 0;
+
+    // 如果level > lastMarkLevel，当前是文内注释，不需要回滚
+    // 如果level = lastMarkLevel是一致的，需要回滚到同级别注释的上一个注释内容。
+    // 如果level < lastMarkLevel是下降的，也需要回滚到同级别注释上一个注释内容。
+    if (level <= lastMarkLevel) {
+      if (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) {
+        let count: number = closingTagStack.length;
+        for (let i = count - 1; i >= 0; i--) {
+          let lastMarkType = closingTagStack[closingTagStack.length - 1].mark;
+          let lastMarkLevel = closingTagStack[closingTagStack.length - 1].level;
+
+          if (level == lastMarkLevel && (lastMarkType == MarkType.Annotation || lastMarkType == MarkType.AnnotationHeader)) {
+            break;
+          } else {
+            this.document.PopClosingTagStack();
+          }
+        }
+      } else {
+        this.document.RollbackClosingTags();
+      }
     }
 
-    let content = currentLine.substr(length);
-    if (level == 0) {
-      this.document.Add(this.type, `  <${this.tag}>`, this.parseContent ? this.parseContent(content) : content, `</${this.tag}>\n`, level);
-    } else {
-      this.document.Add(this.type, `<${this.downlevelTag}>`, this.parseContent ? this.parseContent(content) : content, `</${this.downlevelTag}>`, level);
-    }
+    this.document.AddContent(this.type, level == 0 ? `  <${this.tag}>` : `<${this.downlevelTag}>`, content, "", level);
+    this.document.AddClosingTagStack(this.type, level == 0 ? `</${this.tag}>\n` : `</${this.downlevelTag}>\n`, level);
 
     return true;
   }
 }
 
-class htmlParseParagraphHandler implements IMarkElementParse {
-  constructor(protected readonly type: MarkType, protected readonly tag: string, protected readonly document: IHtmlParseDocument) {}
+class htmlParseParagraphHandler extends BookMarkParseHandler {
+  constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
+    super(type, mark, tag, document);
+  }
 
   Parse(currentLine: string): boolean {
     let content = currentLine;
-    this.document.Add(this.type, `<${this.tag} class="paragraph-div">\n  <p><span class="id">#id#</span></p>\n  <p class="paragraph">`, content, `</p>\n</${this.tag}>\n`);
+
+    let closingTagStack = this.document.getClosingTagStack();
+    let lastMarkType = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].mark : MarkType.None;
+    let lastMarkLevel = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].level : 0;
+
+    // 空白行，吃掉空白
+    if (content.length == 0) {
+      // 遇到空白行全部回滚之前的尾部标签
+      this.document.RollbackClosingTags();
+      return true;
+    }
+    // 遇到段落，需要考虑是否是新段落，还是延续之前的段落。
+    // 判断的标准是，上一个 Mark 是否是注释，以及第一个 Mark 是否是段落。
+    else {
+      // 回滚
+      let firstMarkType = closingTagStack.length ? closingTagStack[0].mark : MarkType.None;
+      // 延续之前的段落
+      if ((lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) && lastMarkLevel > 0 && firstMarkType == MarkType.Paragraph) {
+        this.document.RollbackClosingTags(1);
+        this.document.AddContent(this.type, "", content, "");
+      }
+      // 新段落
+      else {
+        this.document.RollbackClosingTags();
+
+        this.document.AddContent(this.type, `<${this.tag} class="paragraph-div">\n  <p><span class="id">${this.document.getLineCount()}</span></p>\n  <p class="paragraph">`, content, "");
+
+        this.document.AddClosingTagStack(this.type, `</p>\n</${this.tag}>\n`, 0);
+      }
+    }
+
     return true;
   }
 }
@@ -395,74 +515,23 @@ class htmlParseParagraphHandler implements IMarkElementParse {
 class HtmlParseDocument {
   private lineCount: number;
   private readonly authorClasses: Map<string, string> = new Map<string, string>();
-  private readonly htmlParseHandles: IMarkElementParse[] = [];
-  private readonly htmlParseParagraphHandler: IMarkElementParse = new htmlParseParagraphHandler(MarkType.Paragraph, "div", this);
-  private content: MarktoParseContent[] = [];
+  private readonly htmlParseHandles: BookMarkParseHandler[] = [];
+  private readonly htmlParseParagraphHandler: BookMarkParseHandler = new htmlParseParagraphHandler(MarkType.Paragraph, "", "div", this);
+  private htmlContent: string = "";
+  private closingTagStack: ClosingTagStack[] = [];
 
-  constructor(private readonly markContent: string) {
+  constructor(private readonly markContent: string, private readonly authorStyles?: string[]) {
     this.lineCount = 0;
     // "// ", "# ", "## ", "### ", "#### ", "!!! ", "::: ", "    !!! ", "    ::: ", "---", "[author] ",
-    this.htmlParseHandles.push(new HtmlParseNoteHandler(MarkType.Note, "// "));
-    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header1, "# ", "h1", this, parseBookTitleContent));
-    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header2, "## ", "h2", this, parseVolumeTitleContent));
-    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header3, "### ", "h3", this, parseChapterTitleContent));
+    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header1, "# ", "h1", this));
+    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header2, "## ", "h2", this));
+    this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header3, "### ", "h3", this));
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header4, "#### ", "h4", this));
-    this.htmlParseHandles.push(new htmlParseAuthorHandler(MarkType.Author, "[author] ", "p", this, parseAuthorContent));
+    this.htmlParseHandles.push(new htmlParseAuthorHandler(MarkType.Author, "[author] ", "p", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHandler(MarkType.Annotation, "::: ", "p", "    ", "span", this));
-  }
-
-  public getLineCount(): number {
-    this.lineCount++;
-    return this.lineCount;
-  }
-
-  public getStyle(author: string): string {
-    if (this.authorClasses.has(author) == true) {
-      return this.authorClasses.get(author) || "";
-    } else {
-      let _class: string = `style0${(this.authorClasses.size % 4) + 1}`;
-      this.authorClasses.set(author, _class);
-      //console.debug(this.authorClasses);
-      return _class;
-    }
-  }
-
-  public Add(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void {
-    if (mark == MarkType.Annotation) {
-      let count = this.content.length;
-      if (count == 0) {
-        let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this);
-        htmlParseHandle.InsertDefaultHeader(level ? level : 0);
-      } else {
-        let currentMarkLevel = level ? level : 0;
-        for (let i = count - 1; i >= 0; i++) {
-          let lastMark = this.content[i].mark;
-          let lastLevel = this.content[i].level;
-
-          if (lastLevel > currentMarkLevel) {
-            continue;
-          } else if (lastLevel == currentMarkLevel) {
-            if (lastMark == MarkType.AnnotationHeader || lastMark == MarkType.Annotation) {
-              break;
-            } else {
-              let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this);
-              htmlParseHandle.InsertDefaultHeader(level ? level : 0);
-            }
-          } else {
-            console.error(`mark: ${mark}, content: ${openingTag}, ${content}, ${closingTag}.`);
-          }
-        }
-      }
-    }
-
-    this.content.push({
-      mark: mark,
-      openingTag: openingTag,
-      content: content,
-      closingTag: closingTag,
-      level: level ? level : 0,
-    });
+    this.htmlParseHandles.push(new HtmlParseNoteHandler(MarkType.Note, "// ", "", this));
+    this.htmlParseHandles.push(new HtmlParseBreakHandler(MarkType.Break, "---", "hr", this));
   }
 
   isHeader(mark: MarkType): boolean {
@@ -489,179 +558,64 @@ class HtmlParseDocument {
     }
   }
 
-  getContentMarkType(parseContent: MarktoParseContent | undefined): MarkType {
-    if (parseContent) {
-      if (MarkType.Paragraph == parseContent.mark && parseContent.content.length == 0) {
-        return MarkType.Blank;
+  public getAuthorStyle(author: string): string {
+    let _class: string = "";
+    if (this.authorStyles && this.authorStyles.length != 0) {
+      if (this.authorClasses.has(author) == true) {
+        return this.authorClasses.get(author) || "";
+      } else {
+        _class = this.authorStyles[this.authorClasses.size % this.authorStyles.length];
+        this.authorClasses.set(author, _class);
+        return _class;
       }
-      return parseContent.mark;
     }
-    return MarkType.None;
+    return _class;
   }
 
-  public Get(): string {
-    let combine: string = "";
-    let lastMark: MarkType = MarkType.None;
-    let lastParseContent: MarktoParseContent | undefined = undefined;
-    let currentMark: MarkType = MarkType.None;
-    let currentParseContent: MarktoParseContent | undefined = undefined;
-    let stackClosingTags: MarktoParseContent[] = [];
+  public getLineCount(): number {
+    this.lineCount++;
+    return this.lineCount;
+  }
 
-    const rollbackStackClosingTags = (reservedCount?: number) => {
-      let count: number = stackClosingTags.length;
+  public ResetLineCount() {
+    this.lineCount = 0;
+  }
 
-      if (reservedCount) {
-        count -= reservedCount;
-      }
+  public getClosingTagStack(): ClosingTagStack[] {
+    return this.closingTagStack;
+  }
 
-      for (let i = 0; i < count; i++) {
-        combine += stackClosingTags.pop()?.closingTag;
-      }
-    };
+  public RollbackClosingTags(reservedCount?: number): void {
+    let count: number = this.closingTagStack.length;
 
-    for (let index = 0; index < this.content.length; index++) {
-      currentParseContent = this.content[index];
-      currentMark = this.getContentMarkType(currentParseContent);
-
-      //console.debug(`No: ${index}, mark: ${currentMark}, content: ${currentParseContent.content}`);
-
-      // 书名、卷名、章节名
-      if (this.isHeader(currentMark)) {
-        // 遇到书名、卷名、章名，重置行计数值
-        this.lineCount = 0;
-
-        // 回滚之前 Mark 的 HTML 尾部标签（ClosingTag）
-        // 遇到书名、卷名、章名、空白行全部回滚之前的尾部标签
-        rollbackStackClosingTags();
-
-        combine += currentParseContent.openingTag + currentParseContent.content + currentParseContent.closingTag;
-      }
-
-      // 空白行
-      else if (currentMark == MarkType.Blank) {
-        // 遇到空白行全部回滚之前的尾部标签
-        rollbackStackClosingTags();
-
-        // 吃掉空白
-        let nextMark: MarkType = this.getContentMarkType(index < this.content.length - 1 ? this.content[index + 1] : undefined);
-        if (this.isHeader(lastMark) || this.isHeader(nextMark) || this.isAnnotation(lastMark) || lastMark == MarkType.Paragraph) {
-          lastParseContent = currentParseContent;
-          lastMark = this.getContentMarkType(lastParseContent);
-          continue;
-        }
-
-        combine += currentParseContent.openingTag.replace(/#id#/g, `WS`) + currentParseContent.content + currentParseContent.closingTag;
-      }
-
-      // 遇到段落，需要考虑是否是新段落，还是延续之前的段落。
-      // 判断的标准是，上一个 Mark 是否是注释，以及第一个 Mark 是否是段落。
-      else if (currentMark == MarkType.Paragraph) {
-        // 回滚
-        let lastMarkType = this.getContentMarkType(stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1] : undefined);
-        let lastMarkLevel = stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1].level : 0;
-        let firstMarkType = this.getContentMarkType(stackClosingTags[0]);
-        // 延续之前的段落
-        if ((lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) && lastMarkLevel > 0 && firstMarkType == MarkType.Paragraph) {
-          rollbackStackClosingTags(1);
-
-          combine += currentParseContent.content;
-        }
-        // 新段落
-        else {
-          rollbackStackClosingTags();
-
-          combine += currentParseContent.openingTag.replace(/#id#/g, `${this.getLineCount()}`) + currentParseContent.content;
-          stackClosingTags.push(currentParseContent);
-        }
-      }
-
-      // 注释头
-      // 遇到文内注释头，需要考虑多重文内注释嵌套的问题，需要回滚到和当前文内注释level一致的最近的一个文内注释内容的尾部标签
-      // 正文句子。
-      //     !!! 注释者1,注释方式1 （rollback point）
-      //     ::: 注释内容1
-      //         !!! 注释者,注释方式
-      //         ::: 注释内容
-      //     !!! 注释者2,注释方式2 （current）
-      //     ::: 注释内容2
-      else if (currentMark == MarkType.AnnotationHeader) {
-        // 回滚
-        let lastMarkType = this.getContentMarkType(stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1] : undefined);
-        let lastMarkLevel = stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1].level : 0;
-
-        // 如果level是增加的，文内注释
-        if (currentParseContent.level > lastMarkLevel) {
-          //pass;
-        }
-        // 如果level是一致的，同级别注释，但是分开的注释内容，
-        // 需要回滚到同级别注释上一个注释头。
-        // 如果level是下降的，也需要回滚到同级别注释上一个注释头。
-        else if (currentParseContent.level <= lastMarkLevel) {
-          if (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) {
-            let count: number = stackClosingTags.length;
-            for (let i = count - 1; i >= 0; i--) {
-              let lastMarkType = stackClosingTags[stackClosingTags.length - 1].mark;
-              let lastMarkLevel = stackClosingTags[stackClosingTags.length - 1].level;
-
-              if (lastMarkLevel == currentParseContent.level && lastMarkType == MarkType.AnnotationHeader) {
-                combine += stackClosingTags.pop()?.closingTag;
-                break;
-              } else {
-                combine += stackClosingTags.pop()?.closingTag;
-              }
-            }
-          } else {
-            console.debug(`line: ${index}, current: ${currentMark},${currentParseContent.level}, last: ${lastMarkType},${lastMarkLevel}.`);
-            rollbackStackClosingTags();
-          }
-        }
-
-        combine += currentParseContent.openingTag + currentParseContent.content;
-        stackClosingTags.push(currentParseContent);
-      } else if (currentMark == MarkType.Annotation) {
-        // 回滚
-        let lastMarkType = this.getContentMarkType(stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1] : undefined);
-        let lastMarkLevel = stackClosingTags.length > 0 ? stackClosingTags[stackClosingTags.length - 1].level : 0;
-
-        // 如果level是增加的，文内注释
-        if (currentParseContent.level > lastMarkLevel) {
-          //pass;
-        }
-        // 如果level是一致的，同级别注释，但是分开的注释内容，
-        // 需要回滚到同级别注释上一个注释头。
-        // 如果level是下降的，也需要回滚到同级别注释上一个注释头。
-        else if (currentParseContent.level <= lastMarkLevel) {
-          if (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) {
-            let count: number = stackClosingTags.length;
-            for (let i = count - 1; i >= 0; i--) {
-              let lastMarkType = stackClosingTags[stackClosingTags.length - 1].mark;
-              let lastMarkLevel = stackClosingTags[stackClosingTags.length - 1].level;
-
-              if (lastMarkLevel == currentParseContent.level && (lastMarkType == MarkType.Annotation || lastMarkType == MarkType.AnnotationHeader)) {
-                break;
-              } else {
-                combine += stackClosingTags.pop()?.closingTag;
-              }
-            }
-          } else {
-            console.debug(`line: ${index}, current: ${currentMark},${currentParseContent.level}, last: ${lastMarkType},${lastMarkLevel}.`);
-            rollbackStackClosingTags();
-          }
-        }
-
-        combine += currentParseContent.openingTag + currentParseContent.content;
-      } else {
-        rollbackStackClosingTags();
-        combine += currentParseContent.openingTag + currentParseContent.content + currentParseContent.closingTag;
-      }
-
-      lastParseContent = currentParseContent;
-      lastMark = this.getContentMarkType(lastParseContent);
-      //console.debug(`No: ${index}, result: ${combine}`);
+    if (reservedCount) {
+      count -= reservedCount;
     }
 
-    rollbackStackClosingTags();
-    return combine;
+    for (let i = 0; i < count; i++) {
+      this.htmlContent += this.closingTagStack.pop()?.closingTag;
+    }
+  }
+
+  public AddClosingTagStack(mark: MarkType, closingTag: string, level: number): void {
+    this.closingTagStack.push({
+      mark: mark,
+      closingTag: closingTag,
+      level: level,
+    });
+  }
+
+  public PopClosingTagStack(): void {
+    this.htmlContent += this.closingTagStack.pop()?.closingTag;
+  }
+
+  public AddContent(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void {
+    this.htmlContent += openingTag + content + closingTag;
+  }
+
+  public GetContent(): string {
+    this.RollbackClosingTags();
+    return this.htmlContent;
   }
 
   public Parse() {
@@ -686,8 +640,8 @@ export class BookMarkdownDocument {
   constructor() {}
 
   public ToHtml(content: string): string {
-    let htmlParse: HtmlParseDocument = new HtmlParseDocument(content);
+    let htmlParse: HtmlParseDocument = new HtmlParseDocument(content, ["style01", "style02", "style03", "style04"]);
     htmlParse.Parse();
-    return htmlParse.Get();
+    return htmlParse.GetContent();
   }
 }
