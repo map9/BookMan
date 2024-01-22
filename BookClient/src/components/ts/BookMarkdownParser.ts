@@ -159,7 +159,12 @@ interface IBookMarkParse {
 }
 
 class BookMarkParseHandler implements IBookMarkParse {
-  constructor(protected readonly type: MarkType, protected readonly mark: string, protected readonly tag: string, protected readonly document: IHtmlParseDocument) {}
+  constructor(
+    protected readonly type: MarkType,
+    protected readonly mark: string,
+    protected readonly tag: string,
+    protected readonly document: IHtmlParseDocument
+  ) {}
 
   protected CanHandle(currentLine: string, downlevelMark?: string): [boolean, string, number] {
     if (downlevelMark) {
@@ -316,7 +321,14 @@ class htmlParseAuthorHandler extends BookMarkParseHandler {
 
 // 注释头
 class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
-  constructor(type: MarkType, mark: string, tag: string, protected readonly downlevelMark: string, protected readonly downlevelTag: string, document: IHtmlParseDocument) {
+  constructor(
+    type: MarkType,
+    mark: string,
+    tag: string,
+    protected readonly downlevelMark: string,
+    protected readonly downlevelTag: string,
+    document: IHtmlParseDocument
+  ) {
     super(type, mark, tag, document);
   }
 
@@ -326,14 +338,14 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
     let attributes: string[] = this.parseAuthorContent(content);
 
     if (attributes.length == 1) {
-      parsedContent = 
+      parsedContent =
         level == 0
-          ? (attributes[0].length
+          ? attributes[0].length
             ? `  <p><span class="type">${attributes[0]}</span></p>\n`
-            : "")
-          : (attributes[0].length
-            ? `<span class="type">${attributes[0]}</span>`
-            : "");
+            : ""
+          : attributes[0].length
+          ? `<span class="type">${attributes[0]}</span>`
+          : "";
       style = this.document.getAuthorStyle(attributes[0]);
     } else if (attributes.length == 2) {
       parsedContent =
@@ -350,7 +362,7 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
 
   _Parse(content: string, level: number): boolean {
     let closingTagStack = this.document.getClosingTagStack();
-    if (closingTagStack.length == 0 && level > 0){
+    if (closingTagStack.length == 0 && level > 0) {
       // add warning statement
       return false;
     }
@@ -382,7 +394,13 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
     }
 
     let [parsedContent, style] = this.parseContent(content, level);
-    this.document.AddContent(this.type, level == 0 ? `<${this.tag} class="annotation ${style}">\n` : `  <${this.downlevelTag} class="annotation inner ${style}">`, parsedContent, "", level);
+    this.document.AddContent(
+      this.type,
+      level == 0 ? `<${this.tag} class="annotation ${style}">\n` : `  <${this.downlevelTag} class="annotation inner ${style}">`,
+      parsedContent,
+      "",
+      level
+    );
     this.document.AddClosingTagStack(this.type, level == 0 ? `</${this.tag}>\n` : `</${this.downlevelTag}>\n`, level);
 
     return true;
@@ -402,7 +420,14 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
 
 // 注释内容
 class htmlParseAnnotationHandler extends BookMarkParseHandler {
-  constructor(type: MarkType, mark: string, tag: string, protected readonly downlevelMark: string, protected readonly downlevelTag: string, document: IHtmlParseDocument) {
+  constructor(
+    type: MarkType,
+    mark: string,
+    tag: string,
+    protected readonly downlevelMark: string,
+    protected readonly downlevelTag: string,
+    document: IHtmlParseDocument
+  ) {
     super(type, mark, tag, document);
   }
 
@@ -412,11 +437,18 @@ class htmlParseAnnotationHandler extends BookMarkParseHandler {
 
     let closingTagStack = this.document.getClosingTagStack();
     if (closingTagStack.length == 0) {
-      if (level > 0){
+      if (level > 0) {
         // add warning statement
         return false;
       }
-      let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this.document);
+      let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(
+        MarkType.AnnotationHeader,
+        "!!! ",
+        "div",
+        "    ",
+        "annotation",
+        this.document
+      );
       htmlParseHandle.InsertDefaultHeader(level);
     } else {
       for (let i = closingTagStack.length - 1; i >= 0; i--) {
@@ -427,7 +459,14 @@ class htmlParseAnnotationHandler extends BookMarkParseHandler {
           if (level == lastMarkLevel && (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation)) {
             break;
           } else {
-            let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this.document);
+            let htmlParseHandle: htmlParseAnnotationHeaderHandler = new htmlParseAnnotationHeaderHandler(
+              MarkType.AnnotationHeader,
+              "!!! ",
+              "div",
+              "    ",
+              "annotation",
+              this.document
+            );
             htmlParseHandle.InsertDefaultHeader(level);
             break;
           }
@@ -463,7 +502,7 @@ class htmlParseAnnotationHandler extends BookMarkParseHandler {
       }
     }
 
-    this.document.AddContent(this.type, level == 0 ? `  <${this.tag}>` : `<${this.downlevelTag}>`, content, "", level);
+    this.document.AddContent(this.type, level == 0 ? `  <${this.tag}>` : `<${this.downlevelTag}>`,  level == 0 ? `&#x3000&#x3000${content}` : `${content}`, "", level);
     this.document.AddClosingTagStack(this.type, level == 0 ? `</${this.tag}>\n` : `</${this.downlevelTag}>\n`, level);
 
     return true;
@@ -494,7 +533,11 @@ class htmlParseParagraphHandler extends BookMarkParseHandler {
       // 回滚
       let firstMarkType = closingTagStack.length ? closingTagStack[0].mark : MarkType.None;
       // 延续之前的段落
-      if ((lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) && lastMarkLevel > 0 && firstMarkType == MarkType.Paragraph) {
+      if (
+        (lastMarkType == MarkType.AnnotationHeader || lastMarkType == MarkType.Annotation) &&
+        lastMarkLevel > 0 &&
+        firstMarkType == MarkType.Paragraph
+      ) {
         this.document.RollbackClosingTags(1);
         this.document.AddContent(this.type, "", content, "");
       }
@@ -502,7 +545,12 @@ class htmlParseParagraphHandler extends BookMarkParseHandler {
       else {
         this.document.RollbackClosingTags();
 
-        this.document.AddContent(this.type, `<${this.tag} class="paragraph-div">\n  <p><span class="id">${this.document.getLineCount()}</span></p>\n  <p class="paragraph">`, content, "");
+        this.document.AddContent(
+          this.type,
+          `<${this.tag} class="paragraph-div">\n  <p><span class="id">${this.document.getLineCount()}</span></p>\n  <p class="paragraph">`,
+          `&#x3000&#x3000${content}`,
+          ""
+        );
 
         this.document.AddClosingTagStack(this.type, `</p>\n</${this.tag}>\n`, 0);
       }
@@ -522,7 +570,7 @@ class HtmlParseDocument {
 
   constructor(private readonly markContent: string, private readonly authorStyles?: string[]) {
     this.lineCount = 0;
-    // "// ", "# ", "## ", "### ", "#### ", "!!! ", "::: ", "    !!! ", "    ::: ", "---", "[author] ",
+    // "# ", "## ", "### ", "#### ", "[author] ", "!!! ", "::: ", "    !!! ", "    ::: ", "// ", "---",
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header1, "# ", "h1", this));
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header2, "## ", "h2", this));
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header3, "### ", "h3", this));
@@ -530,8 +578,8 @@ class HtmlParseDocument {
     this.htmlParseHandles.push(new htmlParseAuthorHandler(MarkType.Author, "[author] ", "p", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHandler(MarkType.Annotation, "::: ", "p", "    ", "span", this));
-    this.htmlParseHandles.push(new HtmlParseNoteHandler(MarkType.Note, "// ", "", this));
     this.htmlParseHandles.push(new HtmlParseBreakHandler(MarkType.Break, "---", "hr", this));
+    this.htmlParseHandles.push(new HtmlParseNoteHandler(MarkType.Note, "// ", "", this));
   }
 
   isHeader(mark: MarkType): boolean {
