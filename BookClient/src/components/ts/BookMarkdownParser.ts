@@ -8,6 +8,7 @@ enum MarkType {
     # 前缀|书名|副标题
     
     # 毛诗正义
+
     <h1>毛诗正义</h1>
   */
   Header1, // 书
@@ -18,6 +19,7 @@ enum MarkType {
     ## 前缀|卷名|副标题
     
     ## 国风·邶风
+
     <h2>国风·邶风</h2>
   */
   Header2, // 卷
@@ -28,6 +30,7 @@ enum MarkType {
     ### 前缀|章名|副标题
 
     ### 二子乘舟 
+
     <h3>二子乘舟</h3>
   */
   Header3, // 章
@@ -36,27 +39,47 @@ enum MarkType {
     #### 节名 
     
     #### 序言
+    
     <h4>序言</h3>
   */
   Header4, // 节
 
   /*
+    一般在 Header1 之后
     [author] 著作者
     [author] 著作者,著作类型
     [author] 朝代,著作者,著作类型
     [author] 朝代,官职,著作者,著作类型
+    [date] 春秋战国
+    [category] 主类,子类
 
     [author] 西汉,太史令司,马迁,撰
+    [date] 西汉
+    [category] 史,二十四史
+
     <p class="author"><span class="dynasty">[西汉]</span><span class="position">太史令</span><span class="name">司马迁</span><span class="type">撰</span></p>
+    <p><span class="date">西汉</span></p>
+    <p><span class="category">史</span><span class="subcategory">二十四史</span></p>
   */
   Author, // 著作者
+  Date, // 时代
+  Category, // 分类
 
   /*
-    [date]春秋战国
-    [category]主类,子类
+    一般在 Header1，Header2，Header13 之后
     [source](来源1)
     [source](来源2)
+    [description] 内容描述段落1。
+    [description] 内容描述段落2。
+
+    [source](https://zh.wikisource.org/wiki/毛詩正義)
+    [description] 案《汉书·艺文志》、《毛诗》二十九卷，《毛诗故训传》三十卷。然但称毛公，不著其名。《后汉书·儒林传》始云：“赵人毛长传《诗》，是为《毛诗》。”其长字不从“草”。《隋书·经籍志》载《毛诗》二十卷，汉河间太守毛苌传，郑氏笺。于是《诗传》始称毛苌。...
+
+    <a href="https://zh.wikisource.org/wiki/毛詩正義">资料来源</a>
+    <p class="description">案《汉书·艺文志》、《毛诗》二十九卷，《毛诗故训传》三十卷。然但称毛公，不著其名。《后汉书·儒林传》始云：“赵人毛长传《诗》，是为《毛诗》。”其长字不从“草”。《隋书·经籍志》载《毛诗》二十卷，汉河间太守毛苌传，郑氏笺。于是《诗传》始称毛苌。...</p>
   */
+  Source, // 来源
+  Description, // 描述
 
   /*
     正文句子，正文句子，正文句子。...，正文句子。
@@ -72,8 +95,8 @@ enum MarkType {
   /*
     !!! 注释者1,注释方式1
     ::: 注释段落1。
-        !!! 注释者3,注释方式3
-        ::: 注释内容3。    
+        !!! 注释者2,注释方式2
+        ::: 注释内容2。    
 
     !!! 毛亨,传
     ::: 《二子乘舟》，思伋、寿也。卫宣公之二子争相为死，国人伤而思之，作是诗也。
@@ -129,31 +152,6 @@ enum MarkType {
   Break, // 分隔栏
 }
 
-interface ClosingTagStack {
-  mark: MarkType;
-  closingTag: string;
-  level: number;
-}
-
-interface IHtmlParseDocument {
-  isHeader(mark: MarkType): boolean;
-  isHeader3(mark: MarkType): boolean;
-  isAnnotation(mark: MarkType): boolean;
-
-  getAuthorStyle(author: string): string;
-
-  getLineCount(): number;
-  ResetLineCount(): void;
-
-  getClosingTagStack(): ClosingTagStack[];
-  RollbackClosingTags(reservedCount?: number): void;
-  PopClosingTagStack(): void;
-  AddClosingTagStack(mark: MarkType, closingTag: string, level: number): void;
-
-  AddContent(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void;
-  GetContent(): string;
-}
-
 interface IBookMarkParse {
   Parse(currentLine: string, parseContent?: (content: string) => string): boolean;
 }
@@ -207,21 +205,29 @@ class BookMarkParseHandler implements IBookMarkParse {
     }
   }
 
-  protected parseTitleContent(content: string): string[] {
-    let title: string[] = content.split(`|`);
-    if (title.length <= 3) return title;
-    else return [content];
-  }
-
-  protected parseAuthorContent(content: string): string[] {
-    let attributes: string[] = content.split(`,`);
-    if (attributes.length <= 4) return attributes;
-    else return [content];
-  }
-
   Parse(currentLine: string): boolean {
     return false;
   }
+}
+interface ClosingTagStack {
+  mark: MarkType;
+  closingTag: string;
+  level: number;
+}
+
+interface IHtmlParseDocument {
+  getAnnotatorStyle(author: string, type?: string): string;
+
+  getLineCount(): number;
+  ResetLineCount(): void;
+
+  getClosingTagStack(): ClosingTagStack[];
+  RollbackClosingTags(reservedCount?: number): void;
+  PopClosingTagStack(): void;
+  AddClosingTagStack(mark: MarkType, closingTag: string, level: number): void;
+
+  AddContent(mark: MarkType, openingTag: string, content: string, closingTag: string, level?: number): void;
+  GetContent(): string;
 }
 
 // 内部注释行，编译时忽略
@@ -238,6 +244,7 @@ class HtmlParseNoteHandler extends BookMarkParseHandler {
   }
 }
 
+// 分隔栏
 class HtmlParseBreakHandler extends BookMarkParseHandler {
   constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
     super(type, mark, tag, document);
@@ -254,18 +261,18 @@ class HtmlParseBreakHandler extends BookMarkParseHandler {
   }
 }
 
-// 书名、卷名、章节名
+// 书名、卷名、章名、节名
 class HtmlParseHeaderHandler extends BookMarkParseHandler {
   constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
     super(type, mark, tag, document);
   }
 
   private parseContent(content: string): string {
-    let title: string[] = this.parseTitleContent(content);
-    if (title.length == 2) {
-      return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}`;
-    } else if (title.length == 3) {
-      return `<span class='prefix'>${title[0]}</span><span class='separator'>·</span>${title[1]}<span class='separator'>&nbsp;</span><span class='subtitle'>${title[2]}</span>`;
+    let attributes: string[] = content.split(`|`);
+    if (attributes.length == 2) {
+      return `<span class='prefix'>${attributes[0]}</span><span class='separator'>·</span>${attributes[1]}`;
+    } else if (attributes.length == 3) {
+      return `<span class='prefix'>${attributes[0]}</span><span class='separator'>·</span>${attributes[1]}<span class='separator'>&nbsp;</span><span class='subtitle'>${attributes[2]}</span>`;
     } else {
       return content;
     }
@@ -287,14 +294,15 @@ class HtmlParseHeaderHandler extends BookMarkParseHandler {
   }
 }
 
-// 著作者
-class htmlParseAuthorHandler extends BookMarkParseHandler {
+// 著作者，时代，分类
+
+class htmlParseAttributesHandler extends BookMarkParseHandler {
   constructor(type: MarkType, mark: string, tag: string, document: IHtmlParseDocument) {
     super(type, mark, tag, document);
   }
 
-  private parseContent(content: string): string {
-    let attributes: string[] = this.parseAuthorContent(content);
+  private parseAuthorContent(content: string): string {
+    let attributes: string[] = content.split(`,`);
     if (attributes.length == 1) {
       return `<span class="name">${attributes[0]}</span>`;
     } else if (attributes.length == 2) {
@@ -308,12 +316,52 @@ class htmlParseAuthorHandler extends BookMarkParseHandler {
     }
   }
 
+  private parseCategoryContent(content: string): string {
+    let attributes: string[] = content.split(`,`);
+    if (attributes.length == 1) {
+      return `<span class='category'>${attributes[0]}</span>`;
+    } else if (attributes.length == 2) {
+      return `<span class='category'>${attributes[0]}</span><span class='separator'>·</span><span class='subcategory'>${attributes[1]}</span>`;
+    } else {
+      return content;
+    }
+  }
+
+  private parseSourceContent(content: string): string {
+    //let attributes = content.match(/(*)/g);
+    //return attributes?.[0]? attributes[0] : content;
+    return content;
+  }
+
   Parse(currentLine: string): boolean {
     const [canHandle, content] = this.CanHandle(currentLine);
     if (canHandle == false) return false;
 
-    this.document.RollbackClosingTags();
-    this.document.AddContent(this.type, `<${this.tag} class="author">`, this.parseContent(content), `</${this.tag}>\n`);
+    if (this.type == MarkType.Description){
+      let closingTagStack = this.document.getClosingTagStack();
+      let lastMarkType = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].mark : MarkType.None;
+      let lastMarkLevel = closingTagStack.length > 0 ? closingTagStack[closingTagStack.length - 1].level : 0;
+
+      if(lastMarkType == MarkType.Description){
+        this.document.AddContent(this.type, "", `<p class="description">${content}</p>`, "");
+      } else {
+        this.document.RollbackClosingTags();
+        this.document.AddContent(this.type, `<${this.tag} class="description-div">`, `<p class="description">${content}</p>`, "");
+        this.document.AddClosingTagStack(this.type, `</${this.tag}>\n`, 0);
+      }
+    } else {
+      this.document.RollbackClosingTags();
+
+      if (this.type == MarkType.Author){
+        this.document.AddContent(this.type, `<${this.tag} class="attributes">`, this.parseAuthorContent(content), `</${this.tag}>\n`);
+      } else if (this.type == MarkType.Category){
+        this.document.AddContent(this.type, `<${this.tag} class="attributes">`, this.parseCategoryContent(content), `</${this.tag}>\n`);
+      } else if (this.type == MarkType.Date){
+        this.document.AddContent(this.type, `<${this.tag} class="attributes">`, `<span class='dynasty'>[${content}]</span>`, `</${this.tag}>\n`);
+      } else if (this.type == MarkType.Source){
+        this.document.AddContent(this.type, `<${this.tag} href=${this.parseSourceContent(content)} class="attributes">`, `[来源]`, `</${this.tag}>\n`);
+      }
+    }
 
     return true;
   }
@@ -335,7 +383,7 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
   private parseContent(content: string, level: number): [string, string] {
     let parsedContent = "";
     let style = "";
-    let attributes: string[] = this.parseAuthorContent(content);
+    let attributes: string[] = content.split(`,`);
 
     if (attributes.length == 1) {
       parsedContent =
@@ -346,13 +394,13 @@ class htmlParseAnnotationHeaderHandler extends BookMarkParseHandler {
           : attributes[0].length
           ? `<span class="type">${attributes[0]}</span>`
           : "";
-      style = this.document.getAuthorStyle(attributes[0]);
+      style = this.document.getAnnotatorStyle(attributes[0]);
     } else if (attributes.length == 2) {
       parsedContent =
         level == 0
           ? `  <p><span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span></p>\n`
           : `<span class="annotator">${attributes[0]}</span>&nbsp;<span class="type">${attributes[1]}</span>`;
-      style = this.document.getAuthorStyle(attributes[0]);
+      style = this.document.getAnnotatorStyle(attributes[0], attributes[1]);
     } else {
       parsedContent = ``;
     }
@@ -575,39 +623,20 @@ class HtmlParseDocument {
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header2, "## ", "h2", this));
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header3, "### ", "h3", this));
     this.htmlParseHandles.push(new HtmlParseHeaderHandler(MarkType.Header4, "#### ", "h4", this));
-    this.htmlParseHandles.push(new htmlParseAuthorHandler(MarkType.Author, "[author] ", "p", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHeaderHandler(MarkType.AnnotationHeader, "!!! ", "div", "    ", "annotation", this));
     this.htmlParseHandles.push(new htmlParseAnnotationHandler(MarkType.Annotation, "::: ", "p", "    ", "span", this));
+    this.htmlParseHandles.push(new htmlParseAttributesHandler(MarkType.Author, "[author] ", "p", this));
+    this.htmlParseHandles.push(new htmlParseAttributesHandler(MarkType.Date, "[date] ", "p", this));
+    this.htmlParseHandles.push(new htmlParseAttributesHandler(MarkType.Category, "[category] ", "p", this));
+    this.htmlParseHandles.push(new htmlParseAttributesHandler(MarkType.Source, "[source] ", "a", this));
+    this.htmlParseHandles.push(new htmlParseAttributesHandler(MarkType.Description, "[description] ", "div", this));
     this.htmlParseHandles.push(new HtmlParseBreakHandler(MarkType.Break, "---", "hr", this));
     this.htmlParseHandles.push(new HtmlParseNoteHandler(MarkType.Note, "// ", "", this));
   }
 
-  isHeader(mark: MarkType): boolean {
-    if (mark == MarkType.Header1 || mark == MarkType.Header2 || mark == MarkType.Header3 || mark == MarkType.Header4) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  isHeader3(mark: MarkType): boolean {
-    if (mark == MarkType.Header1 || mark == MarkType.Header2 || mark == MarkType.Header3) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  isAnnotation(mark: MarkType): boolean {
-    if (mark == MarkType.AnnotationHeader || mark == MarkType.Annotation) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public getAuthorStyle(author: string): string {
+  public getAnnotatorStyle(annotator: string, type?: string): string {
     let _class: string = "";
+    let author: string = annotator + (type == undefined)? '' : type;
     if (this.authorStyles && this.authorStyles.length != 0) {
       if (this.authorClasses.has(author) == true) {
         return this.authorClasses.get(author) || "";

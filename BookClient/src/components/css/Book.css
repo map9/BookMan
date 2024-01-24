@@ -55,32 +55,46 @@ p {
   font-size: smaller;
 }
 
-.author {
+.attributes {
   font-family: var(--annotation-font-family);
   font-size: 14px;
 }
 
-.author .dynasty {
+.attributes .dynasty {
   color: blue;
 }
 
-.author .position {
+.attributes .position {
   color: blueviolet;
 }
 
-.author .name {
+.attributes .name {
   color: black;
 }
 
-.author .type {
+.attributes .type {
   color: brown;
 }
 
-.section {
-  font-family: var(--reader-font-family);
-  font-size: 20px;
-  font-weight: 500;
+.attributes .category {
+  color: black;
+}
+
+.attributes .subcategory {
+  color: gray;
+}
+
+.description-div {
+  margin: 10px 0px;
+  padding: 4px 0px;
+}
+
+.description-div .description {
   text-align: justify;
+  line-height: 22px;
+  font-family: var(--annotation-font-family);
+  font-size: 16px;
+  color: gray;
 }
 
 .paragraph-div {
